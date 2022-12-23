@@ -1,0 +1,1 @@
+ALTER TABLE appointment ADD COLUMN receipt_id VARCHAR(255);

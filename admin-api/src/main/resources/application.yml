@@ -1,0 +1,95 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+    flyway:
+      enabled: true
+      locations: classpath:db/migration
+    jackson:
+      default-property-inclusion: non_null
+      mapper.accept_case_insensitive_enums: true
+      serialization.indent_output: true
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      open-in-view: false
+      show-sql: true
+      format_sql: true
+    output:
+      ansi:
+        enabled: always
+  webflux:
+    base-path: /admin-api
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 200MB
+      max-request-size: 215MB
+      location: ${java.io.tmpdir}
+  codec.max-in-memory-size: 100MB
+  jackson:
+    default-property-inclusion: non_null
+    mapper.accept_case_insensitive_enums: true
+    serialization.indent_output: true
+management:
+  endpoint.health.probes.enabled: true
+  endpoint.loggers.enabled: true
+  endpoint.prometheus.enabled: true
+  endpoint.info.enabled: true
+  endpoints.web.exposure.include: "info, health, loggers, prometheus"
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: INFO
+    org.springframework.web: DEBUG
+    level.org.hibernate: WARN
+    org.springframework.boot.actuate.health: WARN
+    org.springframework.data.r2dbc: DEBUG
+  pattern.console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(%5p) %clr(:){faint} %replace(%m){\"password=.*, \", \"password=xxx, \"}%n%wEx"
+server:
+  error:
+    include-message: always
+file:
+  storage:
+    directory: ./files
+security:
+  firebase-props:
+    enable-strict-server-session: true
+    enable-check-session-revoked: false
+    enable-logout-everywhere: false
+    session-expiry-in-days: 5
+    api-identity-url: https://identitytoolkit.googleapis.com/v1/accounts
+    api-key: ${FIREBASE_API_KEY}
+  allow-credentials: true
+  allowed-origins:
+    - "*"
+  allowed-methods:
+    - "*"
+  allowed-headers:
+    - "*"
+  exposed-headers:
+    - "*"
+  allowed-get-public-apis:
+    - /actuator
+    - /actuator/
+    - /actuator/**
+    - /favicon.ico
+    - /public/*
+    - /
+    - /swagger-ui.html
+    - /webjars/swagger-ui/**
+    - /v3/api-docs/**
+    - /resources/**
+    - /webjars/**
+    - /assets/**
+    - /api/tutorials
+    - /api/files/**
+  allowed-public-apis:
+    - /auth
+    - /auth/**

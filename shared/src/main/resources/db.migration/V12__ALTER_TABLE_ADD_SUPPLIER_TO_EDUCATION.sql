@@ -1,0 +1,14 @@
+ALTER TABLE education
+    ADD COLUMN file_id VARCHAR(255);
+
+ALTER TABLE education
+    ADD CONSTRAINT FK_EDUCATION_ON_FILE_ID FOREIGN KEY (file_id) REFERENCES file (id);
+
+ALTER TABLE education
+    DROP COLUMN specialization;
+
+ALTER TABLE education
+    ADD COLUMN supplier_id VARCHAR(255);
+
+ALTER TABLE education
+    ADD CONSTRAINT FK_EDUCATION_ON_SUPPLIER FOREIGN KEY (supplier_id) REFERENCES supplier (id);
