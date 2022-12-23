@@ -1,0 +1,319 @@
+image: alpine:latest
+
+variables:
+  DOCKER_DRIVER: overlay2
+  ROLLOUT_RESOURCE_TYPE: deployment
+  DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  K8S_SECRET_TZ: "Asia/Dhaka"
+  K8S_SECRET_TERM: "xterm-256color"
+
+stages:
+  - test
+  - build
+  - review
+  - staging
+  - production
+  - cleanup
+
+admin-api-test:
+  stage: test
+  image: openjdk:11.0.11-jdk-slim
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - cd admin-api
+    - ../gradlew clean bootJar
+  allow_failure: false
+  cache:
+    key: admin-api-cache
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+    policy: pull-push
+  artifacts:
+    expose_as: "Admin Api Pipeline Data"
+    name: "$CI_COMMIT_REF_NAME-admin-api"
+    paths:
+      - admin-api/build/reports/
+      - admin-api/build/libs/admin-api.jar
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+
+client-api-test:
+  stage: test
+  image: openjdk:11.0.11-jdk-slim
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - cd client-api
+    - ../gradlew clean bootJar
+  allow_failure: false
+  cache:
+    key: client-api-cache
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+    policy: pull-push
+  artifacts:
+    expose_as: "Client Api Pipeline Data"
+    name: "$CI_COMMIT_REF_NAME-client-api"
+    paths:
+      - client-api/build/reports/
+      - client-api/build/libs/client-api.jar
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+
+supplier-api-test:
+  stage: test
+  image: openjdk:11.0.11-jdk-slim
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - cd supplier-api
+    - ../gradlew clean bootJar
+  allow_failure: false
+  cache:
+    key: supplier-api-cache
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+    policy: pull-push
+  artifacts:
+    expose_as: "Supplier Api Pipeline Data"
+    name: "$CI_COMMIT_REF_NAME-supplier-api"
+    paths:
+      - supplier-api/build/reports/
+      - supplier-api/build/libs/supplier-api.jar
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+
+stream-test:
+  stage: test
+  image: openjdk:11.0.11-jdk-slim
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - ./gradlew clean bootJar
+  allow_failure: false
+  cache:
+    key: stream-cache
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+    policy: pull-push
+  artifacts:
+    expose_as: "Stream Pipeline Data"
+    name: "$CI_COMMIT_REF_NAME-stream"
+    paths:
+      - stream/build/reports/
+      - stream/build/libs/stream.jar
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+
+.auto-deploy-values:
+  before_script:
+    - |
+      if [[ -z "$CI_COMMIT_TAG" ]]; then
+        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG}/mind-treat
+        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_SHA}
+      else
+        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE}/mind-treat
+        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_TAG}
+      fi
+
+admin-api-build:
+  extends: .auto-deploy-values
+  dependencies:
+    - admin-api-test
+  stage: build
+  image: docker:19.03.11
+  services:
+    - docker:19.03.11-dind
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - image_tagged="$CI_APPLICATION_REPOSITORY-admin-api:$CI_APPLICATION_TAG"
+    - image_latest="$CI_APPLICATION_REPOSITORY-admin-api:latest"
+    - echo "$GOOGLE_APPLICATION_CREDENTIALS_FILE" > "$GOOGLE_APPLICATION_CREDENTIALS"
+    - cp "$GOOGLE_APPLICATION_CREDENTIALS" "admin-api/$GOOGLE_APPLICATION_CREDENTIALS"
+    - |
+      docker build \
+      --build-arg GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      --network host \
+      --tag "$image_tagged" \
+      --tag "$image_latest" admin-api/.
+    - docker push "$image_tagged"
+    - docker push "$image_latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+
+client-api-build:
+  extends: .auto-deploy-values
+  dependencies:
+    - client-api-test
+  stage: build
+  image: docker:19.03.11
+  services:
+    - docker:19.03.11-dind
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - image_tagged="$CI_APPLICATION_REPOSITORY-client-api:$CI_APPLICATION_TAG"
+    - image_latest="$CI_APPLICATION_REPOSITORY-client-api:latest"
+    - echo "$GOOGLE_APPLICATION_CREDENTIALS_FILE" > "$GOOGLE_APPLICATION_CREDENTIALS"
+    - cp "$GOOGLE_APPLICATION_CREDENTIALS" "client-api/$GOOGLE_APPLICATION_CREDENTIALS"
+    - |
+      docker build \
+      --build-arg GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      --network host \
+      --tag "$image_tagged" \
+      --tag "$image_latest" client-api/.
+    - docker push "$image_tagged"
+    - docker push "$image_latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+
+supplier-api-build:
+  extends: .auto-deploy-values
+  dependencies:
+    - supplier-api-test
+  stage: build
+  image: docker:19.03.11
+  services:
+    - docker:19.03.11-dind
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - image_tagged="$CI_APPLICATION_REPOSITORY-supplier-api:$CI_APPLICATION_TAG"
+    - image_latest="$CI_APPLICATION_REPOSITORY-supplier-api:latest"
+    - echo "$GOOGLE_APPLICATION_CREDENTIALS_FILE" > "$GOOGLE_APPLICATION_CREDENTIALS"
+    - cp "$GOOGLE_APPLICATION_CREDENTIALS" "supplier-api/$GOOGLE_APPLICATION_CREDENTIALS"
+    - |
+      docker build \
+      --build-arg GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      --network host \
+      --tag "$image_tagged" \
+      --tag "$image_latest" supplier-api/.
+    - docker push "$image_tagged"
+    - docker push "$image_latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+
+stream-build:
+  extends: .auto-deploy-values
+  dependencies:
+    - stream-test
+  stage: build
+  image: docker:19.03.11
+  services:
+    - docker:19.03.11-dind
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - image_tagged="$CI_APPLICATION_REPOSITORY-stream:$CI_APPLICATION_TAG"
+    - image_latest="$CI_APPLICATION_REPOSITORY-stream:latest"
+    - echo "$GOOGLE_APPLICATION_CREDENTIALS_FILE" > "$GOOGLE_APPLICATION_CREDENTIALS"
+    - cp "$GOOGLE_APPLICATION_CREDENTIALS" "stream/$GOOGLE_APPLICATION_CREDENTIALS"
+    - |
+      docker build \
+      --build-arg GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+      --network host \
+      --tag "$image_tagged" \
+      --tag "$image_latest" stream/.
+    - docker push "$image_tagged"
+    - docker push "$image_latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+
+.auto-deploy:
+  image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2.30.0"
+
+review:
+  stage: review
+  dependencies:
+    - admin-api-build
+  extends:
+    - .auto-deploy
+    - .auto-deploy-values
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    on_stop: stop-review
+  variables:
+    K8S_SECRET_SENTRY_DSN: "$SENTRY_DSN?environment=review"
+    K8S_SECRET_SPRING_PROFILES_ACTIVE: "staging"
+    K8S_SECRET_GOOGLE_APPLICATION_CREDENTIALS: "$GOOGLE_APPLICATION_CREDENTIALS"
+    K8S_SECRET_FIREBASE_API_KEY: "$FIREBASE_API_KEY"
+    K8S_SECRET_POSTGRES_HOST: "$CI_ENVIRONMENT_SLUG-postgresql"
+    K8S_SECRET_POSTGRES_PORT: "$POSTGRES_PORT"
+    K8S_SECRET_POSTGRES_DB: "$POSTGRES_DB"
+    K8S_SECRET_POSTGRES_USER: "$POSTGRES_USER"
+    K8S_SECRET_POSTGRES_PASSWORD: "$POSTGRES_PASSWORD"
+  script:
+    - auto-deploy check_kube_domain
+    - auto-deploy download_chart
+    - auto-deploy use_kube_context || true
+    - auto-deploy ensure_namespace
+    - auto-deploy create_secret
+    - auto-deploy deploy
+    - auto-deploy persist_environment_url
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: never
+    - if: '$REVIEW_DISABLED'
+      when: never
+    - if: '$CI_MERGE_REQUEST_ID'
+
+stop-review:
+  stage: cleanup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - auto-deploy use_kube_context || true
+    - auto-deploy delete
+  dependencies: []
+  allow_failure: true
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: never
+    - if: '$REVIEW_DISABLED'
+      when: never
+    - if: '$CI_MERGE_REQUEST_ID'
+      when: manual
+
+staging:
+  stage: staging
+  dependencies:
+    - admin-api-build
+  extends:
+    - .auto-deploy
+    - .auto-deploy-values
+  variables:
+    K8S_SECRET_SPRING_PROFILES_ACTIVE: "staging"
+    K8S_SECRET_GOOGLE_APPLICATION_CREDENTIALS: "$GOOGLE_APPLICATION_CREDENTIALS"
+    K8S_SECRET_FIREBASE_API_KEY: "$FIREBASE_API_KEY"
+    K8S_SECRET_POSTGRES_HOST: "$CI_ENVIRONMENT_SLUG-postgresql"
+    K8S_SECRET_POSTGRES_PORT: "$POSTGRES_PORT"
+    K8S_SECRET_POSTGRES_DB: "$POSTGRES_DB"
+    K8S_SECRET_POSTGRES_USER: "$POSTGRES_USER"
+    K8S_SECRET_POSTGRES_PASSWORD: "$POSTGRES_PASSWORD"
+  script:
+    - auto-deploy check_kube_domain
+    - auto-deploy download_chart
+    - auto-deploy use_kube_context || true
+    - auto-deploy ensure_namespace
+    - auto-deploy create_secret
+    - auto-deploy deploy
+  environment:
+    name: staging
+    url: https://mind-treat-backend.$KUBE_INGRESS_BASE_DOMAIN
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $STAGING_ENABLED'
