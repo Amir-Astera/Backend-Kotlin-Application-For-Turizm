@@ -1,6 +1,10 @@
 package dev.december.jeterbackend.supplier.features.authorization.data.services
 
+import com.google.firebase.ErrorCode
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.supplier.features.authorization.domain.services.FirebaseAuthService
 import dev.december.jeterbackend.supplier.features.authorization.domain.usecases.AuthParams
 import dev.december.jeterbackend.supplier.features.authorization.presentation.dto.AuthResponseDto
@@ -31,9 +35,9 @@ class FirebaseAuthServiceImpl(
 ) : FirebaseAuthService {
     private val webClient = webClientBuilder.build()
 
-    override suspend fun auth(email: String, password: String): Data<AuthResponseDto> {
+    override suspend fun auth(email: String, password: String, osType: OsType): Data<AuthResponseDto> {
         return try {
-//            val supplier = (userRepository.findByEmail(email))?.supplier
+//            val supplier = supplierRepository.findByEmail(email)
 //                ?: return Data.Error(SupplierNotFoundFailure())
 //
 //            if (supplier.enableStatus != AccountEnableStatus.ENABLED) {
@@ -61,6 +65,9 @@ class FirebaseAuthServiceImpl(
 //            }
 //
 //            analyticsCounterService.countLogin()
+//            if (supplier.osType != osType) {
+//                supplierRepository.save(supplier.copy(osType = osType))
+//            }
 //
 //            val authResponseDto = AuthResponseDto(
 //                tokenType = "Bearer",

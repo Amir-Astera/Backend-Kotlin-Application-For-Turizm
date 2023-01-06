@@ -1,7 +1,7 @@
 package dev.december.jeterbackend.admin.features.admin.domain.usecases
 
 import dev.december.jeterbackend.admin.features.admin.domain.services.AdminService
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.admin.domain.models.AdminAuthorityCode
@@ -25,7 +25,7 @@ class CreateAdminUseCase(
 
 data class CreateAdminParams(
     val fullName: String,
-    val gender: UserGender? = UserGender.UNKNOWN,
+    val gender: Gender? = Gender.UNKNOWN,
     val email: String,
     val phone: String,
     val password: String,

@@ -22,7 +22,7 @@ data class ClientEntity(
     val fullName: String,
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
-    val userGender: UserGender = UserGender.UNKNOWN,
+    val userGender: Gender = Gender.UNKNOWN,
     @Column(name = "birth_date")
     val birthDate: LocalDate? = null,
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
@@ -44,16 +44,9 @@ data class ClientEntity(
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "file_id", referencedColumnName = "id")
     val file: FileEntity? = null,
-    @Column(name = "phone_type")
-    val phoneType: String? = null,
     @Enumerated(EnumType.STRING)
     @Column(name = "os_type")
     val osType: OsType? = null,
-    @Enumerated(EnumType.STRING)
-    @Column(name = "app_type")
-    val appType: AppType? = null,
-    @Column(name = "have_unread_messages")
-    val haveUnreadMessages: Boolean? = false,
     @Column(name="notify")
     val notify: Boolean = true,
     @Column(name = "created_at", nullable = false)
@@ -62,7 +55,4 @@ data class ClientEntity(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "registration_token")
     val registrationToken: String? = null,
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    @JoinColumn(name = "client_id")
-    val userAuthorities: Set<UserAuthorityEntity> = emptySet(),
 )

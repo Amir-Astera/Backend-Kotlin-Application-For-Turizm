@@ -23,9 +23,11 @@ data class ChatEntity(
     val archiveStatus: ChatArchiveStatus = ChatArchiveStatus.UNARCHIVED,
     @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @JoinColumn(name = "chat_id")
-    val messages: Set<MessageEntity>? = emptySet(),
-    @Column(name = "unread_messages_count", nullable = false)
-    val unreadMessagesCount: Int = 0,
+    val messages: Set<MessageEntity> = emptySet(),
+    @Column(name = "client_unread_messages_count", nullable = false)
+    val clientUnreadMessagesCount: Int = 0,
+    @Column(name = "supplier_unread_messages_count", nullable = false)
+    val supplierUnreadMessagesCount: Int = 0,
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "updatedAt", nullable = false)
@@ -33,5 +35,4 @@ data class ChatEntity(
 )
 {
     override fun hashCode(): Int = id.hashCode()
-
 }

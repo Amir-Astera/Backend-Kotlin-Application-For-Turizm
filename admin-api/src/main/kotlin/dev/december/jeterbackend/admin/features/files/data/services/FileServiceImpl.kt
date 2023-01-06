@@ -36,11 +36,11 @@ internal class FileServiceImpl(
     private val fileRepository: FileRepository,
 ) : FileService {
 
-    override suspend fun storeFile(directory: FileDirectory, part: FilePart, priority: Int): Data<File> {
+    override suspend fun storeFile(directory: FileDirectory, part: FilePart, priority: Int, contentLength: Long): Data<File> {
         val allTypes = MimeTypes.getDefaultMimeTypes()
         val fileType = allTypes.forName(part.headers().contentType.toString())
+        val originalFileName = part.filename()
         val format = fileType.extension.replace(".", "")
-
         val id = "${UUID.randomUUID()}"
         val fileName = "$id.$format"
         val cleanPath: String = StringUtils.cleanPath("${directory.name.lowercase()}/$fileName")
@@ -54,6 +54,8 @@ internal class FileServiceImpl(
                 val fileEntity = fileRepository.save(
                     FileEntity(
                         id = id,
+                        name = originalFileName,
+                        size = contentLength,
                         format = format,
                         directory = directory,
                         url = "/api/files/${directory.name.lowercase()}/$fileName",

@@ -5,35 +5,51 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
+import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
+import dev.december.jeterbackend.stream.signaler.config.properties.FirebaseGoogleCredentialsProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.stereotype.Component
+import java.io.FileInputStream
 import java.io.IOException
 
-@Configuration
-class FirebaseConfig {
+@Component
+class FirebaseConfig(
+    private val googleCredentialsProperties: FirebaseGoogleCredentialsProperties,
+) {
 
-    @Primary
-    @Bean
+    init {
+        initFor(FIREBASE_APP_SUPPLIER, googleCredentialsProperties.supplier)
+        initFor(FIREBASE_APP_CLIENT, googleCredentialsProperties.client)
+    }
+
+    companion object {
+        const val FIREBASE_APP_SUPPLIER = "SUPPLIER"
+        const val FIREBASE_APP_CLIENT = "CLIENT"
+    }
+
     @Throws(IOException::class)
-    fun init() {
-        if (FirebaseApp.getApps().isEmpty()) {
-            val options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.getApplicationDefault())
-                .build()
-            FirebaseApp.initializeApp(options)
+    private fun initFor(name: String, credentialsPath: String) {
+        val stream = FileInputStream(credentialsPath)
+        val options = FirebaseOptions.builder()
+            .setCredentials(GoogleCredentials.fromStream(stream))
+            .build()
+        FirebaseApp.initializeApp(options, name)
+    }
+
+    private fun getNameFromRole(role: PlatformRole): String{
+        return when(role) {
+            PlatformRole.SUPPLIER -> FIREBASE_APP_SUPPLIER
+            PlatformRole.CLIENT -> FIREBASE_APP_CLIENT
         }
     }
 
-    @Bean
-    fun firebaseAuth(): FirebaseAuth {
-        init()
-        return FirebaseAuth.getInstance()
+    fun firebaseAuth(role: PlatformRole): FirebaseAuth {
+        return FirebaseAuth.getInstance(FirebaseApp.getInstance(getNameFromRole(role)))
     }
 
-    @Bean
-    fun firebaseMessaging(): FirebaseMessaging {
-        init()
-        return FirebaseMessaging.getInstance()
+    fun firebaseMessaging(role: PlatformRole): FirebaseMessaging {
+        return FirebaseMessaging.getInstance(FirebaseApp.getInstance(getNameFromRole(role)))
     }
 }

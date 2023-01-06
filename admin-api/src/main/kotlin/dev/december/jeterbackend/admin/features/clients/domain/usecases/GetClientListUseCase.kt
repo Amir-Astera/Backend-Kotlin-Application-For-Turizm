@@ -3,6 +3,7 @@ package dev.december.jeterbackend.admin.features.clients.domain.usecases
 import dev.december.jeterbackend.admin.features.clients.domain.services.ClientService
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
@@ -24,6 +25,7 @@ class GetClientListUseCase(
             params.size,
             params.searchField,
             params.activityStatuses,
+            params.osTypes,
             params.createdFrom,
             params.createdTo,
             params.enableStatus,
@@ -38,6 +40,7 @@ data class GetClientListParams(
     val size: Int,
     val searchField: String?,
     val activityStatuses: Set<AccountActivityStatus>?,
+    val osTypes: Set<OsType>?,
     val createdFrom: LocalDateTime?,
     val createdTo: LocalDateTime?,
     val enableStatus: AccountEnableStatus?,

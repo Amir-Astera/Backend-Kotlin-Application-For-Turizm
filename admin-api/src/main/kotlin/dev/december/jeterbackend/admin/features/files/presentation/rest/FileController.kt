@@ -28,12 +28,13 @@ class FileController(
     @SecurityRequirement(name = "security_auth")
     @PostMapping("/{directory}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun create(
+        @RequestHeader("Content-Length") contentLength: Long,
         @PathVariable directory: FileDirectory,
         @RequestParam(required = false) priority: Int?,
         @RequestPart part: FilePart,
         @Parameter(hidden = true) request: ServerHttpRequest,
     ): Mono<ResponseEntity<Any>> {
-        return mono { uploadFileUseCase(UploadFileParams(directory, part, priority)) }.map {
+        return mono { uploadFileUseCase(UploadFileParams(directory, part, priority, contentLength)) }.map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity.ok(it.data)

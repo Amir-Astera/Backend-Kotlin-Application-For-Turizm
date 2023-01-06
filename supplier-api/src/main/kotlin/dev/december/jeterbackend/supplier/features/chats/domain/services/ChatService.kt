@@ -3,6 +3,7 @@ package dev.december.jeterbackend.supplier.features.chats.domain.services
 
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.chats.domain.models.*
+import dev.december.jeterbackend.shared.features.files.domain.models.File
 import org.springframework.data.domain.Page
 import java.time.LocalDateTime
 
@@ -21,4 +22,5 @@ interface ChatService {
     suspend fun unarchiveChat(chatId: String): Data<Unit>
     suspend fun deleteChat(chatId: String): Data<Unit>
     suspend fun getAllMessages(chatId: String, page: Int, size: Int, searchField: String?): Data<Unit>//Page<Message>
+    suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Unit>//Page<File>
 }

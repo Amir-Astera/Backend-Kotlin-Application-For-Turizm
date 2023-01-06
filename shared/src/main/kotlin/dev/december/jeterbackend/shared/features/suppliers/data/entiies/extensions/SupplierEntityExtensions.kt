@@ -22,9 +22,7 @@ fun SupplierEntity.supplier(isFavorite: Boolean? = null): Supplier {
         mapOf(
 //            "profession" to this.profession?.profession(),
             "files" to this.files.map<FileEntity, File> { it.convert() },
-//            "user" to this.user?.user(),
             "passportFiles" to this.passportFiles.map <FileEntity, File> { it.convert() },
-            "file" to this.file?.convert<FileEntity, File>(),
             "education" to (this.education?.map { it.education() }?.toSet()),
             "certificate" to (this.certificate?.map { it.certificate() }?.toSet()),
             "isFavorite" to isFavorite,
@@ -36,7 +34,7 @@ fun SupplierEntity.supplier(isFavorite: Boolean? = null): Supplier {
 fun EducationEntity.education(): SupplierEducationResponse {
     return this.convert(
         mapOf(
-            "fileId" to this.file?.convert<FileEntity, File>(),
+            "file" to this.file?.convert<FileEntity, File>(),
         )
     )
 }
@@ -44,34 +42,6 @@ fun CertificateEntity.certificate(): SupplierCertificateResponse {
     return this.convert(
         mapOf(
             "file" to this.file?.convert<FileEntity, File>(),
-        )
-    )
-}
-
-fun ClientEntity.identity(): UserIdentity? {
-    return if (this.email != null && this.phone != null)
-        UserIdentity.Both(this.phone, this.email)
-    else if (this.email != null && this.phone == null)
-        UserIdentity.Email(this.email)
-    else if (this.email == null && this.phone != null)
-        UserIdentity.Phone(this.phone)
-    else null
-}
-
-fun ClientEntity.user(): Client {
-    val userIdentity = this.identity()
-    val userAuthorities = setOf(UserAuthority(
-        code = AuthorityCode.CLIENT,
-        enableStatus = this.enableStatus,
-        activityStatus = this.activityStatus,
-    ))
-    return convert(
-        mapOf(
-            "id" to this.id,
-            "identity" to userIdentity,
-            "authorities" to userAuthorities,
-            "createdAt" to this.createdAt,
-            "updatedAt" to this.updatedAt
         )
     )
 }

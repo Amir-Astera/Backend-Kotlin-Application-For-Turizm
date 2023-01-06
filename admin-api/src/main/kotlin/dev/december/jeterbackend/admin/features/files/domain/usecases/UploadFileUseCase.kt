@@ -13,7 +13,7 @@ class UploadFileUseCase(
     private val fileService: FileService
 ) : UseCase<UploadFileParams, File> {
     override suspend fun invoke(params: UploadFileParams): Data<File> {
-        return fileService.storeFile(params.directory, params.part, params.priority ?: 0 )
+        return fileService.storeFile(params.directory, params.part, params.priority ?: 0, params.contentLength)
     }
 }
 
@@ -21,4 +21,5 @@ data class UploadFileParams(
     val directory: FileDirectory,
     val part: FilePart,
     val priority: Int?,
+    val contentLength: Long,
 )

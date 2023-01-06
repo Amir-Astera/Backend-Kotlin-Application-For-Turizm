@@ -2,6 +2,7 @@ package dev.december.jeterbackend.admin.features.suppliers.domain.services
 
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.feedbacks.domain.models.FeedbackSortField
@@ -21,6 +22,7 @@ interface SupplierService {
         searchField: String?,
         activityStatuses: Set<AccountActivityStatus>?,
         statuses: Set<SupplierStatus>?,
+        osTypes: Set<OsType>?,
         professionIds: Set<String>?,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?,
@@ -28,16 +30,15 @@ interface SupplierService {
     ): Data<Page<Supplier>>
     suspend fun get(supplierId: String): Data<Supplier>
     suspend fun disableList(ids: List<String>): Data<Unit>
-    suspend fun disable(id: String): Data<Unit>
-    suspend fun approve(id: String): Data<Unit>
-    suspend fun disapprove(id: String): Data<Unit>
-    suspend fun enable(id: String): Data<Unit>
-    suspend fun disableRoleSupplier(userId: String)
+    suspend fun disable(supplierId: String): Data<Unit>
+    suspend fun approve(supplierId: String): Data<Unit>
+    suspend fun disapprove(supplierId: String): Data<Unit>
+    suspend fun enable(supplierId: String): Data<Unit>
     suspend fun getSupplierFeedbacks(
-        userId: String,
+        supplierId: String,
         sortField: FeedbackSortField,
         sortDirection: SortDirection,
         page: Int,
         size: Int
-    ): Data<Unit>//FeedbackWithGrade
+    ): Data<FeedbackWithGrade>
 }

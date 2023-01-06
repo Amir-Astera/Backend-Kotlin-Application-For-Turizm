@@ -4,7 +4,8 @@ import dev.december.jeterbackend.shared.features.suppliers.data.entiies.Supplier
 import dev.december.jeterbackend.shared.features.suppliers.domain.models.SupplierStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.shared.features.authorities.data.entities.UserAuthorityEntity
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Component
@@ -171,10 +172,10 @@ class SupplierSpecification {
             else null
         }
 
-        fun isGender(gender: UserGender?): Specification<SupplierEntity>? {
+        fun isGender(gender: Gender?): Specification<SupplierEntity>? {
             return if (gender != null) {
                 Specification<SupplierEntity> { root, _, _ ->
-                    root.get<UserGender>("userGender").`in`(gender)
+                    root.get<Gender>("userGender").`in`(gender)
                 }
             } else null
         }
@@ -194,6 +195,13 @@ class SupplierSpecification {
                 }
             }
             else null
+        }
+        fun isInOsType(osTypes: Set<OsType>?): Specification<SupplierEntity>? {
+            return if (osTypes != null && osTypes.isNotEmpty()) {
+                Specification<SupplierEntity> { root, _, _ ->
+                    root.get<AccountActivityStatus>("osType").`in`(osTypes)
+                }
+            } else null
         }
     }
 }

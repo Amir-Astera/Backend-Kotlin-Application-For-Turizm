@@ -17,7 +17,7 @@ data class AdminEntity(
     val fullName: String,
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
-    val userGender: UserGender = UserGender.UNKNOWN,
+    val gender: Gender = Gender.UNKNOWN,
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "file_id", referencedColumnName = "id")
     val file: FileEntity? = null,

@@ -1,1 +1,0 @@
-ALTER TABLE client ALTER COLUMN full_name DROP NOT NULL;

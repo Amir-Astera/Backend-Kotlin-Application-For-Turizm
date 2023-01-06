@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -69,8 +70,7 @@ class ChatServiceImpl(
 //                        "chatId" to chatEntity.id,
 //                        "client" to chatEntity.client.client(),
 //                        "supplier" to chatEntity.supplier.supplier(),
-//                        "lastMessage" to chatEntity.messages?.sortedBy { it.createdAt }
-//                            ?.lastOrNull { it.chat?.id == chatEntity.id }?.messages()
+//                        "lastMessage" to messageRepository.getByChatIdAndCreatedAt(chatEntity.id, chatEntity.updatedAt)?.messages()
 //                    ))
 //                }
                 Data.Success(Unit)//chats
@@ -171,18 +171,39 @@ class ChatServiceImpl(
     ): Data<Unit> {//Page<Message>
         return try {
             withContext(dispatcher) {
-                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
-                chatRepository.save(chatEntity.copy(unreadMessagesCount = 0))
-
-                val sortParams = MessageSortField.CREATED_AT.getSortFields(SortDirection.DESC)
-                val pageable = PageRequest.of(page, size, sortParams)
-                val specification = Specification.where(ChatSpecification.findAllByChatId(chatEntity)).and(ChatSpecification.containsMessage(searchField))
-                val messageEntities = messageRepository.findAll(specification, pageable)
-                val messages = messageEntities.map { it.messages() }
+//                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
+//                chatRepository.save(chatEntity.copy(supplierUnreadMessagesCount = 0))
+//
+//                val sortParams = MessageSortField.CREATED_AT.getSortFields(SortDirection.DESC)
+//                val pageable = PageRequest.of(page, size, sortParams)
+//                val specification = Specification.where(ChatSpecification.findAllByChatId(chatEntity)).and(ChatSpecification.containsMessage(searchField))
+//                val messageEntities = messageRepository.findAll(specification, pageable)
+//                val messages = messageEntities.map { it.messages() }
                 Data.Success(Unit)//messages
             }
         } catch (e: Exception) {
             Data.Error(ChatGetAllMessageException())
+        }
+    }
+
+    override suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Unit> {//Page<File>
+        return try {
+            withContext(dispatcher) {
+//                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
+//
+//                if (chatEntity.supplier.id != userId) {
+//                    return@withContext Data.Error(GetChatPermissionDenied())
+//                }
+//
+//                val sortParams = Sort.by("created_at").descending()
+//                val pageable = PageRequest.of(page, size, sortParams)
+//                val files = fileRepository.getAllByChatId(chatId, pageable).map {
+//                    it.convert<FileEntity, File>()
+//                }
+                Data.Success(Unit)//files
+            }
+        } catch (e: Exception) {
+            Data.Error(ChatGetAllMediaFilesFailure())
         }
     }
 }

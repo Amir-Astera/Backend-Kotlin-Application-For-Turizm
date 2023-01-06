@@ -1,1 +1,0 @@
-ALTER TABLE app_user RENAME user_name TO full_name;

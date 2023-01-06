@@ -3,6 +3,7 @@ package dev.december.jeterbackend.admin.features.suppliers.domain.usecases
 import dev.december.jeterbackend.admin.features.suppliers.domain.services.SupplierService
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
@@ -26,6 +27,7 @@ class GetSupplierListUseCase(
             params.searchField,
             params.activityStatuses,
             params.statuses,
+            params.osTypes,
             params.professionIds,
             params.createdFrom,
             params.createdTo,
@@ -43,6 +45,7 @@ data class GetSupplierListParams(
     val searchField: String?,
     val activityStatuses: Set<AccountActivityStatus>?,
     val statuses: Set<SupplierStatus>?,
+    val osTypes: Set<OsType>?,
     val professionIds: Set<String>?,
     val createdFrom: LocalDateTime?,
     val createdTo: LocalDateTime?,

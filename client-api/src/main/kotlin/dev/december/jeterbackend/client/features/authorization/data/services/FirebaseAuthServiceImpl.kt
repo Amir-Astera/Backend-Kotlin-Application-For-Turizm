@@ -1,8 +1,11 @@
 package dev.december.jeterbackend.client.features.authorization.data.services
 
+import com.google.firebase.ErrorCode
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import dev.december.jeterbackend.client.core.config.security.SecurityProperties
-import dev.december.jeterbackend.supplier.features.authorization.domain.services.FirebaseAuthService
+import dev.december.jeterbackend.client.features.authorization.domain.services.FirebaseAuthService
 import dev.december.jeterbackend.client.features.authorization.domain.usecases.AuthParams
 import dev.december.jeterbackend.client.features.authorization.presentation.dto.AuthResponseDto
 import dev.december.jeterbackend.shared.core.results.Data
@@ -11,6 +14,7 @@ import dev.december.jeterbackend.client.features.authorization.domain.errors.Ref
 import dev.december.jeterbackend.client.features.authorization.domain.errors.ResetPasswordEmailFailure
 import dev.december.jeterbackend.client.features.authorization.domain.errors.ResetPasswordFailure
 import dev.december.jeterbackend.client.features.authorization.domain.errors.SupplierAuthFailure
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.springframework.http.HttpStatus
@@ -31,13 +35,13 @@ class FirebaseAuthServiceImpl(
 ) : FirebaseAuthService {
     private val webClient = webClientBuilder.build()
 
-    override suspend fun auth(email: String, password: String): Data<AuthResponseDto> {
+    override suspend fun auth(email: String, password: String, osType: OsType): Data<AuthResponseDto> {
         return try {
-//            val supplier = (userRepository.findByEmail(email))?.supplier
-//                ?: return Data.Error(SupplierNotFoundFailure())
+//            val client = clientRepository.findByEmail(email)
+//                ?: return Data.Error(ClientNotFoundFailure())
 //
-//            if (supplier.enableStatus != AccountEnableStatus.ENABLED) {
-//                return Data.Error(SupplierDisabledFailure(isDisabled = true))
+//            if (client.enableStatus != AccountEnableStatus.ENABLED) {
+//                return Data.Error(ClientDisabledFailure(isDisabled = true))
 //            }
 //
 //            val firebaseProps = securityProperties.firebaseProps
@@ -57,11 +61,18 @@ class FirebaseAuthServiceImpl(
 //            val responseData = response.body
 //
 //            if (response.statusCode != HttpStatus.OK || responseData == null) {
-//                throw FirebaseAuthException(FirebaseException(ErrorCode.UNAVAILABLE, "Authorization failed!", Throwable()))
+//                throw FirebaseAuthException(FirebaseException(
+//                    ErrorCode.UNAVAILABLE,
+//                    "Authorization failed!",
+//                    Throwable()
+//                ))
 //            }
 //
 //            analyticsCounterService.countLogin()
-//
+//            if (client.osType != osType){
+//                clientRepository.save(client.copy(osType = osType))
+//            }
+
 //            val authResponseDto = AuthResponseDto(
 //                tokenType = "Bearer",
 //                accessToken = responseData.idToken,

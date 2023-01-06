@@ -5,7 +5,7 @@ import dev.december.jeterbackend.admin.features.admin.presentation.dto.UpdateAdm
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.admin.data.entities.AdminEntity
 import dev.december.jeterbackend.shared.features.admin.domain.models.Admin
@@ -36,7 +36,7 @@ interface AdminService {
         password: String,
         fullName: String,
         birthDate: LocalDate?,
-        gender: UserGender?,
+        gender: Gender?,
         avatarId: String?,
         successOnExists: ((AdminEntity) -> Boolean)? = null,
     ): Data<String>

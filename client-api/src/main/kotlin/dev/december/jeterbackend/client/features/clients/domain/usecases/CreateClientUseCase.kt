@@ -1,7 +1,7 @@
 package dev.december.jeterbackend.client.features.clients.domain.usecases
 
 import dev.december.jeterbackend.client.features.clients.domain.services.ClientService
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.files.domain.models.File
@@ -36,7 +36,7 @@ data class CreateClientParams(
     val password: String,
     val fullName: String,
     val birthDate: LocalDate? = null,
-    val gender: UserGender? = null,
+    val gender: Gender? = null,
     val avatar: File? = null,
     val registrationToken: String? = null,
 )

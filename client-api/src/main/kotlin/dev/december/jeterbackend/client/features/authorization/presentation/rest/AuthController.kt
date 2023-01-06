@@ -14,6 +14,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
@@ -28,12 +29,13 @@ class AuthController(
 ) {
     @PostMapping("/authEmail")
     fun create(
+        @RequestHeader("Sec-CH-UA-Platform",required = false) osType: String?,
         @Parameter(hidden = true)
         request: ServerHttpRequest
     ): Mono<ResponseEntity<Any>> {
         val authorizationHeader = request.headers.getFirst(HttpHeaders.AUTHORIZATION) ?: ""
         val encodedToken = authorizationHeader.split(' ').lastOrNull() ?: ""
-        return mono { authUseCase(AuthParams(encodedToken)) }.map {
+        return mono { authUseCase(AuthParams(encodedToken, osType)) }.map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity
@@ -50,12 +52,13 @@ class AuthController(
 
     @PostMapping("/auth")
     fun createPhone(
+        @RequestHeader("Sec-CH-UA-Platform",required = false) osType: String?,
         @Parameter(hidden = true)
         request: ServerHttpRequest
     ): Mono<ResponseEntity<Any>> {
         val authorizationHeader = request.headers.getFirst(HttpHeaders.AUTHORIZATION) ?: ""
         val encodedToken = authorizationHeader.split(' ').lastOrNull() ?: ""
-        return mono { authWithPhoneUseCase(AuthParams(encodedToken)) }.map {
+        return mono { authWithPhoneUseCase(AuthParams(encodedToken, osType)) }.map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity

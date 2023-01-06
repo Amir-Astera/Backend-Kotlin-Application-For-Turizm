@@ -22,5 +22,6 @@ interface ChatService {
     suspend fun archiveChat(chatId: String): Data<Unit>
     suspend fun unarchiveChat(chatId: String): Data<Unit>
     suspend fun deleteChat(chatId: String): Data<Unit>
-    suspend fun getAllMessages(chatId: String, page: Int, size: Int, searchField: String?): Data<Unit>//<Page<Message>>
+    suspend fun getAllMessages(chatId: String, page: Int, size: Int, searchField: String?): Data<Unit>//Page<Message>
+    suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Unit>//Page<File>
 }

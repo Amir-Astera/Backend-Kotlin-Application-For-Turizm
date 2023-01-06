@@ -3,7 +3,7 @@ package dev.december.jeterbackend.client.features.authorization.domain.usecases
 import dev.december.jeterbackend.client.features.authorization.presentation.dto.AuthResponseDto
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
-import dev.december.jeterbackend.supplier.features.authorization.domain.services.FirebaseAuthService
+import dev.december.jeterbackend.client.features.authorization.domain.services.FirebaseAuthService
 import org.springframework.stereotype.Component
 
 @Component

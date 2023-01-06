@@ -5,16 +5,23 @@ import dev.december.jeterbackend.client.features.clients.domain.services.ClientS
 import dev.december.jeterbackend.client.features.analytics.domain.services.AnalyticsCounterService
 import dev.december.jeterbackend.client.features.clients.domain.errors.*
 import dev.december.jeterbackend.client.features.clients.presentation.dto.UpdateClientData
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
 import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
 import dev.december.jeterbackend.shared.features.files.data.repositories.FileRepository
 import dev.december.jeterbackend.shared.features.files.domain.models.File
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.FavoriteSupplierRepository
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
+import dev.december.jeterbackend.shared.features.suppliers.data.repositories.specifications.FavoriteSupplierSpecification
+import dev.december.jeterbackend.shared.features.suppliers.domain.models.Supplier
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -35,7 +42,7 @@ class ClientServiceImpl(
         password: String,
         fullName: String,
         birthDate: LocalDate?,
-        gender: UserGender?,
+        gender: Gender?,
         avatar: File?,
         registrationToken: String,
         successOnExists: ((ClientEntity) -> Boolean)?
@@ -226,20 +233,20 @@ class ClientServiceImpl(
         }
     }
 
-    override suspend fun getFavoriteSuppliers(userId: String, page: Int, size: Int): Data<Unit> {//Page<Supplier>
+    override suspend fun getFavoriteSuppliers(userId: String, page: Int, size: Int): Data<Page<Supplier>> {
         return try {
             withContext(dispatcher) {
-//                val userEntity =
-//                    userRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(UserNotFoundFailure())
-//                val clientId = userEntity.client?.id
-//                    ?: return@withContext Data.Error(ClientNotFoundFailure())
-//                val pageable = PageRequest.of(page, size,)
-//                val specifications =
-//                    Specification.where(FavoriteSupplierSpecification.clientJoinFilter(clientId))
-//                val suppliers = favoriteSupplierRepository.findAll(specifications, pageable).map { favoriteSupplierEntity ->
-//                    favoriteSupplierEntity.supplier.supplier(isFavorite = true)
-//                }
-                Data.Success(Unit)//suppliers
+                val clientEntity = clientRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(ClientNotFoundFailure())
+                val clientId = clientEntity.id
+                val pageable = PageRequest.of(page, size,)
+                val specifications =
+                    Specification.where(FavoriteSupplierSpecification.clientJoinFilter(clientId))
+                .and(FavoriteSupplierSpecification.approvedFilter())
+                .and(FavoriteSupplierSpecification.enabledFilter())
+                val suppliers = favoriteSupplierRepository.findAll(specifications, pageable).map { favoriteSupplierEntity ->
+                    favoriteSupplierEntity.supplier.supplier(isFavorite = true)
+                }
+                Data.Success(suppliers)
             }
         } catch (e: Exception) {
             Data.Error(FavoriteSuppliersGetFailure())

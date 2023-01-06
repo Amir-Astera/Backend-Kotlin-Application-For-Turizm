@@ -5,10 +5,18 @@ import dev.december.jeterbackend.shared.features.chats.data.repositories.ChatRep
 import dev.december.jeterbackend.shared.features.chats.data.repositories.MessageRepository
 import dev.december.jeterbackend.client.features.chats.domain.errors.*
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.appointments.data.repositories.AppointmentRepository
 import dev.december.jeterbackend.shared.features.tours.data.repositories.TourRepository
 import dev.december.jeterbackend.shared.features.chats.domain.models.ChatArchiveStatus
+import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
+import dev.december.jeterbackend.shared.features.files.data.repositories.FileRepository
+import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -16,10 +24,12 @@ import java.time.LocalDateTime
 @Service
 class ChatServiceImpl(
     private val dispatcher: CoroutineDispatcher,
-//    private val supplierRepository: SupplierRepository,
+    private val supplierRepository: SupplierRepository,
+    private val clientRepository: ClientRepository,
+    private val chatRepository: ChatRepository,
     private val chatClientRepository: ChatRepository,
-//    private val userRepository: UserRepository,
-    private val appointmentRepository: TourRepository,
+    private val fileRepository: FileRepository,
+    private val appointmentRepository: AppointmentRepository,
     private val messageRepository: MessageRepository
 ) : ChatService {
 
@@ -50,8 +60,7 @@ class ChatServiceImpl(
 //                    "chatId" to chatEntity.id,
 //                    "client" to chatEntity.client.client(),
 //                    "supplier" to chatEntity.supplier.supplier(),
-//                    "lastMessage" to chatEntity.messages?.sortedBy { it.createdAt }
-//                        ?.lastOrNull { it.chat?.id == chatEntity.id }?.messages()
+//                    "lastMessage" to messageRepository.getByChatIdAndCreatedAt(chatEntity.id, chatEntity.updatedAt)?.messages()
 //                )) }
                 Data.Success("")
             }
@@ -146,8 +155,8 @@ class ChatServiceImpl(
     override suspend fun getAllMessages(chatId: String, page: Int, size: Int, searchField: String?): Data<Unit> {//Page<Message>
         return try {
             withContext(dispatcher) {
-//                val chatEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
-//                chatClientRepository.save(chatEntity.copy(unreadMessagesCount = 0))
+//                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
+//                chatRepository.save(chatEntity.copy(clientUnreadMessagesCount = 0))
 //
 //                val sortParams = MessageSortField.CREATED_AT.getSortFields(SortDirection.DESC)
 //                val pageable = PageRequest.of(page, size, sortParams)
@@ -158,6 +167,27 @@ class ChatServiceImpl(
             }
         } catch (e: Exception) {
             Data.Error(ChatGetAllMessagesException())
+        }
+    }
+
+    override suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Unit> {//Page<File>
+        return try {
+            withContext(dispatcher) {
+//                val chatEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
+//
+//                if (chatEntity.client.id != userId) {
+//                    return@withContext Data.Error(GetChatPermissionDenied())
+//                }
+//
+//                val sortParams = Sort.by("created_at").descending()
+//                val pageable = PageRequest.of(page, size, sortParams)
+//                val files = fileRepository.getAllByChatId(chatId, pageable).map {
+//                    it.convert<FileEntity, File>()
+//                }
+                Data.Success(Unit)//files
+            }
+        } catch (e: Exception) {
+            Data.Error(ChatGetAllMediaFilesFailure())
         }
     }
 }

@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "mindtreat-partner",
+  "private_key_id": "e408e4842c6888b324d52fe9fe91c74df352c7d6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCL42uVFSfO3pgS\n9km1ig17hTGfB0M7BthuOoauNHhkTTwVsug2OIxRLVIF+RHop+eN/qqR3yHYivbC\n0P2ofr4oXP03toQ8ovCB4RomaexwspjAArO+ohZdc8SOPezp4b/zgvAGKFDz18IE\nrl6w9XHuaJgK+7PPqlpoAItzL7AHDa3k++/OBY9IriD0MZbTfcTJd3IjUl2sMYuy\ntxoV4S7L0yh2vjiQ5v9n8IrJC+3Wbth4O5RhupOFHuLsMNDOQZ8BmOogkASNbnlZ\nxQf6zdeEVdBS+hTHUMWJiFlkkxfq0H7acpHKxZqIYIwBkBXR5PheBJEpLmoTawGg\nDqc6iabbAgMBAAECggEANF1O1dFEBAvOKHb6U5MYhe7visSotY1T8jtFVCu/D2jb\n/5FnnHhhijepVyQLwKgtpTk5933ryQgH5Bhgg7TiEPDyNutDKAGkfzHY3J1VDUDF\nrka0qz04mwXtg4OJzmkbtheDKwLnfsf60E7Hkn1mhySvGZlsD2YJDpp5mQY2YgT+\nl1MvN0Rgqm9I2mE9w0X7G5/szfO42AtpkP+px+inY5OA5UsvI22Q/WmPxIe3vlsC\n9j63/oHPQdkrEffaHzJ2sSTWizTmOJHT6v4/SbalUwPDUl6PuiLIY7XF1ktBTIO/\nUWbSRRkPqeGcHKcRp+KLbCYQpHIOOUY8vGpeUhA8gQKBgQDEYmqSfs4DXc62GXPn\nvSYsCr5BKS5EVQfTuDpHafoCJDdGyTJonLRMXf/DBbWqbn+GW+pES9cqgBjM+gMe\n4pl8DKHqyvbBOBKi3oKbP3vagbPyzLRhaaj6OGXZKm443z/rfF+yV8TxKSdeupNq\nQttXqFZBOldEk5xPqQQRGq/agQKBgQC2WokoJeyWIVWPnvZYYa5rEb65AXCrPzuG\nau8pvH7d7f1kmr8UswyiAkfWuzVJEPiRdFYMQo2BY6Uo6RMcTRALq3WcNI/HOoo4\n3aaRXAWmUZa+QRVT2y9QqD2Jr5XXUgMKWOwqyVroO9xsmaWkorCqPtHR6bWghqyT\nz6MenIt7WwKBgQCJCCtZIYZbLv/obQZFc+TI4o4zJasVH0gg4fI4lqhPCjpP+GBm\nQsJEb2riCH/k9smhVU24bjsresrTbLj0uiVjO+VX0lwwIxJN93mnHrsrk0mfaFuN\nhY7VWrkmucbDhHQzu0uDRF818AN6xDHM+e3X0qytQypVvbJam5Ms5DRFAQKBgBr2\n+k8ohHqSxU8uh2j8UMleX2CGGP4JpKi0yVbXm77/gTfONjE+ZMDUK4FSP4flbYw8\nsrivYrNeY77P8FaAAr5nBUYq85PXUTcld4sJG4DDkdHiV+AFilKX/jmM8FBdvTtb\neNi+26V5rJeWhMr6j7ss/OPYdlYddAmLa6iMJ4f/AoGAAexUZD8ciDQw1dhbwsy/\naQqzVkp53siJ1jMAP8L/9mruJLhXxtH0uh/dqvdtmtkAveDe1htGyVc5czJn+OSr\nbMjDDdR8KPkldnUt6qzF6vjcYxg636sXqnQb8QgyQlHIKXlrSzhTRGbrJ7QiE6GM\nR1Kbg5w1Tts9i7DN4mGB+KE=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-ewgh5@mindtreat-partner.iam.gserviceaccount.com",
+  "client_id": "113965536998293130792",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-ewgh5%40mindtreat-partner.iam.gserviceaccount.com"
+}

@@ -13,12 +13,12 @@ class GetSupplierFeedbacksUseCase(
     private val supplierService: SupplierService
 ): UseCase<GetSupplierFeedbacksParams, FeedbackWithGrade> {
     override suspend fun invoke(params: GetSupplierFeedbacksParams): Data<FeedbackWithGrade> {
-        return supplierService.getSupplierFeedbacks(params.userId, params.sortField, params.sortDirection, params.page, params.size)
+        return supplierService.getSupplierFeedbacks(params.supplierId, params.sortField, params.sortDirection, params.page, params.size)
     }
 }
 
 data class GetSupplierFeedbacksParams(
-    val userId: String,
+    val supplierId: String,
     val sortField: FeedbackSortField,
     val sortDirection: SortDirection,
     val page: Int,

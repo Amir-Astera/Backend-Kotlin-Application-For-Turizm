@@ -1,12 +1,5 @@
 package dev.december.jeterbackend.admin.features.clients.domain.usecases
 
-import dev.december.jeterbackend.admin.features.clients.domain.services.ClientService
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
-import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
-import dev.december.jeterbackend.shared.core.results.Data
-import org.springframework.stereotype.Component
-import java.time.LocalDate
-
 //@Component
 //class CreateClientUseCase(
 //    private val clientService: ClientService

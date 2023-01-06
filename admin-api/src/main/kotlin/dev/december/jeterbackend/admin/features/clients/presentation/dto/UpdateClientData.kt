@@ -1,6 +1,6 @@
 package dev.december.jeterbackend.admin.features.clients.presentation.dto
 
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import java.time.LocalDate
 
 data class UpdateClientData(
@@ -9,6 +9,6 @@ data class UpdateClientData(
     val avatarId: String?,
     val fullName: String?,
     val birthDate: LocalDate?,
-    val gender: UserGender?,
+    val gender: Gender?,
     val phone: String?
 )

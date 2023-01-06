@@ -4,6 +4,7 @@ import dev.december.jeterbackend.admin.features.clients.domain.usecases.*
 import dev.december.jeterbackend.admin.features.clients.presentation.dto.DeleteClientListData
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.domain.models.ClientSortField
@@ -48,6 +49,8 @@ class ClientController(
         @RequestParam(required = false)
         activityStatuses: Set<AccountActivityStatus>?,
         @RequestParam(required = false)
+        osTypes: Set<OsType>?,
+        @RequestParam(required = false)
         @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
         createdFrom: LocalDateTime?,
         @RequestParam(required = false)
@@ -65,6 +68,7 @@ class ClientController(
                     size,
                     searchField,
                     activityStatuses,
+                    osTypes,
                     createdFrom,
                     createdTo,
                     enableStatus,

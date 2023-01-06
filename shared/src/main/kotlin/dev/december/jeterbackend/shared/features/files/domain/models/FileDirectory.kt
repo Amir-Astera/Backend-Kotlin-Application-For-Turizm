@@ -23,4 +23,6 @@ enum class FileDirectory {
     SUPPLIER_EXPERIENCE,
     @JsonProperty("profession")
     PROFESSION,
+    @JsonProperty("chat_media")
+    CHAT_MEDIA,
 }

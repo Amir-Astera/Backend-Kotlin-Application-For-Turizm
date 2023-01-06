@@ -1,9 +1,6 @@
 package dev.december.jeterbackend.admin.features.admin.data.services
 
-import com.google.firebase.auth.AuthErrorCode
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.UserRecord
 import dev.december.jeterbackend.admin.features.admin.domain.errors.AdminListGetFailure
 import dev.december.jeterbackend.admin.features.admin.domain.services.AdminService
 import dev.december.jeterbackend.admin.features.admin.presentation.dto.UpdateAdminByUserIdData
@@ -13,7 +10,7 @@ import dev.december.jeterbackend.admin.features.files.domain.error.FileNotFoundF
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.admin.data.entities.AdminEntity
 import dev.december.jeterbackend.shared.features.admin.data.entities.extensions.admin
@@ -84,7 +81,7 @@ class AdminServiceImpl(
         password: String,
         fullName: String,
         birthDate: LocalDate?,
-        gender: UserGender?,
+        gender: Gender?,
         avatarId: String?,
         successOnExists: ((AdminEntity) -> Boolean)?,
     ): Data<String> {
@@ -203,7 +200,7 @@ class AdminServiceImpl(
                     id = oldAdminEntity.id,
                     fullName = updateAdminByUserIdData?.fullName ?: oldAdminEntity.fullName,
                     birthDate = updateAdminByUserIdData?.birthDate ?: oldAdminEntity.birthDate,
-                    userGender = updateAdminByUserIdData?.gender ?: oldAdminEntity.userGender,
+                    gender = updateAdminByUserIdData?.gender ?: oldAdminEntity.gender,
                     file = avatarFile ?: oldAdminEntity.file
                 )
 

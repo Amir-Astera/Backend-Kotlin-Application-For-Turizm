@@ -5,7 +5,8 @@ import dev.december.jeterbackend.client.features.authorization.presentation.dto.
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.client.features.authorization.domain.errors.RefreshTokenFailure
-import dev.december.jeterbackend.supplier.features.authorization.domain.services.FirebaseAuthService
+import dev.december.jeterbackend.shared.core.domain.model.OsType
+import dev.december.jeterbackend.client.features.authorization.domain.services.FirebaseAuthService
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,8 +21,9 @@ class AuthWithPhoneUseCase (
             val user = firebaseAuth.getUserByPhoneNumber(phone) //?: return Data.Error(SupplierNotFoundInFirebasePhoneFailure())
             val email = user.email
             val password = credentials.last()
+            val osType = OsType.UNKNOWN.get(params.osType)
 
-            return service.auth(email, password)
+            return service.auth(email, password, osType)
         } catch (e:Exception) {
             Data.Error(RefreshTokenFailure())//SupplierNotFoundInFirebasePhoneFailure()
         }

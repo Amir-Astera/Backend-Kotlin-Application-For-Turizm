@@ -1,13 +1,25 @@
 package dev.december.jeterbackend.client.features.payments.data.services
 
+import dev.december.jeterbackend.client.features.clients.domain.errors.ClientNotFoundFailure
 import dev.december.jeterbackend.client.features.payments.domain.errors.PaymentCreateFailure
 import dev.december.jeterbackend.client.features.payments.domain.errors.PaymentGetListFailure
 import dev.december.jeterbackend.client.features.payments.domain.services.PaymentService
+import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
+import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.appointments.data.entities.extensions.appointment
+import dev.december.jeterbackend.shared.features.appointments.data.repositories.AppointmentRepository
+import dev.december.jeterbackend.shared.features.appointments.data.repositories.specification.AppointmentSpecification
+import dev.december.jeterbackend.shared.features.appointments.domain.models.Appointment
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentSortField
 import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
 import dev.december.jeterbackend.shared.features.tours.data.repositories.TourRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
@@ -17,7 +29,8 @@ import java.util.*
 class PaymentServiceImpl(
     private val dispatcher: CoroutineDispatcher,
     private val clientRepository: ClientRepository,
-    private val tourRepository: TourRepository
+    private val tourRepository: TourRepository,
+    private val appointmentRepository: AppointmentRepository
 ) : PaymentService {
 
     override suspend fun create(
@@ -38,33 +51,28 @@ class PaymentServiceImpl(
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?
-    ): Data<Unit> {//List<Tour>
+    ): Data<Page<Appointment>> {
         return try {
             withContext(dispatcher) {
-//                val client = (userRepository.findByIdOrNull(userId)
-//                    ?: return@withContext Data.Error(UserNotFoundFailure())).client
-//                    ?: return@withContext Data.Error(ClientNotFoundFailure())
-//                val sortParams = AppointmentSortField.RESERVATION_DATE.getSortFields(SortDirection.DESC, PlatformRole.CLIENT)
-//
-//                val pageable = PageRequest.of(page, size, sortParams)
-//
-//                val payments = if(createdFrom != null && createdTo != null) {
-//                    tourRepository
-//                        .findAllByClientIdAndPaymentNotNullAndReservationDateBetween(
-//                            client.id, createdFrom, createdTo, pageable
-//                        )
-//                } else if (createdFrom != null) {
-//                    tourRepository.findAllByClientIdAndPaymentNotNullAndReservationDateAfter(
-//                        client.id, createdFrom, pageable
-//                    )
-//                } else if (createdTo != null) {
-//                    tourRepository.findAllByClientIdAndPaymentNotNullAndReservationDateBefore(
-//                        client.id, createdTo, pageable
-//                    )
-//                } else {
-//                    tourRepository.findAllByClientIdAndPaymentNotNull(client.id, pageable)
-//                }
-                Data.Success(Unit)//payments.map { it.appointment() }
+                val client = clientRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(ClientNotFoundFailure())
+
+                val sortParams = AppointmentSortField.RESERVATION_DATE.getSortFields(SortDirection.DESC, PlatformRole.CLIENT)
+
+                val pageable = PageRequest.of(page, size, sortParams)
+
+                var specifications =
+                    Specification.where(AppointmentSpecification.clientJoinFilter(client.id))
+                        .and(AppointmentSpecification.paymentIsNotNull())
+
+                if (createdFrom != null || createdTo != null) {
+                    specifications = specifications.and(AppointmentSpecification.isInPeriod(createdFrom, createdTo))
+                }
+
+                val appointmentsEntity = appointmentRepository.findAll(specifications, pageable)
+
+                val payments = appointmentsEntity.map { it.appointment() }
+
+                Data.Success(payments)
             }
         } catch (e: Exception) {
             Data.Error(PaymentGetListFailure())

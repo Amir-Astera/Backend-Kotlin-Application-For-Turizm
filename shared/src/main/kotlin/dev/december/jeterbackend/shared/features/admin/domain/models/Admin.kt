@@ -4,13 +4,11 @@ import dev.december.jeterbackend.shared.core.domain.model.*
 import dev.december.jeterbackend.shared.features.files.domain.models.File
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
-import javax.persistence.*
 
 data class Admin(
     val id: String,
     val fullName: String,
-    val userGender: UserGender,
+    val gender: Gender,
     val file: File?,
     val birthDate: LocalDate?,
     val activityStatus: AccountActivityStatus,

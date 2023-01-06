@@ -1,7 +1,7 @@
 package dev.december.jeterbackend.shared.features.clients.domain.models
 
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.features.files.data.entities.FileEntity
 import java.time.LocalDate
 
@@ -12,7 +12,7 @@ data class ClientUser(
     val avatar: FileEntity?,
     val fullName: String?,
     val birthDate: LocalDate?,
-    var gender: UserGender?
+    var gender: Gender?
 )
 
 data class UserClient(

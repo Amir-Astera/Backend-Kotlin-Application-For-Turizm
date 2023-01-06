@@ -27,7 +27,8 @@ class ChatController(
     private val archiveChatUseCase: ArchiveChatUseCase,
     private val unArchiveChatUseCase: UnArchiveChatUseCase,
     private val deleteChatUseCase: DeleteChatUseCase,
-    private val getAllMessagesUseCase: GetAllMessagesUseCase
+    private val getAllMessagesUseCase: GetAllMessagesUseCase,
+    private val getChatMediaFilesUseCase: GetChatMediaFilesUseCase
     ) {
     @SecurityRequirement(name = "security_auth")
     @GetMapping
@@ -186,6 +187,32 @@ class ChatController(
     ): Mono<ResponseEntity<Any>> {
         return mono { getAllMessagesUseCase(
             GetAllMessagesChatParams(chatId, page, size, searchField)
+        ) }.map {
+            when (it) {
+                is Data.Success -> {
+                    ResponseEntity.ok().body(it.data)
+                }
+                is Data.Error -> {
+                    ResponseEntity.status(it.failure.code).body(it.failure)
+                }
+            }
+        }
+    }
+
+    @SecurityRequirement(name = "security_auth")
+    @GetMapping("/{chatId}/media")
+    fun getAllMediaFiles(
+        @PathVariable chatId: String,
+        @Parameter(hidden = true) authentication: Authentication,
+        @RequestParam(required = false, defaultValue = "0")
+        page: Int,
+        @RequestParam(required = false, defaultValue = "10")
+        size: Int,
+    ): Mono<ResponseEntity<Any>> {
+        val user = authentication.principal as SessionUser
+        val userId = user.id
+        return mono { getChatMediaFilesUseCase(
+            GetChatMediaFilesParams(userId, chatId, page, size)
         ) }.map {
             when (it) {
                 is Data.Success -> {

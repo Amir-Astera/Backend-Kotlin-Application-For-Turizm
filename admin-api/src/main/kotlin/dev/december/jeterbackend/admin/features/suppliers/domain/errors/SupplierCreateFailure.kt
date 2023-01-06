@@ -1,6 +1,6 @@
-package dev.bytepride.truprobackend.admin.features.suppliers.domain.errors
+package dev.december.jeterbackend.admin.features.suppliers.domain.errors
 
-import dev.bytepride.truprobackend.core.errors.Failure
+import dev.december.jeterbackend.shared.core.errors.Failure
 
 data class SupplierCreateFailure(
     override val code: Int = 500,

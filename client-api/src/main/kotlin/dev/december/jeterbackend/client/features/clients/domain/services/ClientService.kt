@@ -1,11 +1,11 @@
 package dev.december.jeterbackend.client.features.clients.domain.services
 
 import dev.december.jeterbackend.client.features.clients.presentation.dto.UpdateClientData
-import dev.december.jeterbackend.shared.core.domain.model.UserGender
+import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
-import dev.december.jeterbackend.shared.features.clients.domain.models.Client
 import dev.december.jeterbackend.shared.features.files.domain.models.File
+import dev.december.jeterbackend.shared.features.suppliers.domain.models.Supplier
 import org.springframework.data.domain.Page
 import java.time.LocalDate
 
@@ -16,7 +16,7 @@ interface ClientService {
         password: String,
         fullName: String,
         birthDate: LocalDate?,
-        gender: UserGender?,
+        gender: Gender?,
         avatar: File?,
         registrationToken: String,
         successOnExists: ((ClientEntity) -> Boolean)? = null,
@@ -47,7 +47,7 @@ interface ClientService {
         userId: String,
         page: Int,
         size: Int,
-    ): Data<Unit>//Page<Supplier>
+    ): Data<Page<Supplier>>
 
     suspend fun deleteSupplierFromFavorites(
         userId: String,

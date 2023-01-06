@@ -13,14 +13,17 @@ import javax.persistence.*
 
 @Entity(name = "supplier")
 data class SupplierEntity(
-    //AdminEntity
     @Id
     @Column(name = "id", nullable = false)
     val id: String = UUID.randomUUID().toString(),
+    @Column(name = "email")
+    val email: String? = null,
+    @Column(name = "phone")
+    val phone: String? = null,
     @Column(name = "first_name")
     val name: String,
     @Column(name = "surname")
-    val surName: String,
+    val surname: String,
     @Column(name = "patronymic")
     val patronymic: String,
     @Column(name = "birth_date")
@@ -97,20 +100,13 @@ data class SupplierEntity(
     val schedule: ScheduleEntity? = null,
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
-    val userGender: UserGender = UserGender.UNKNOWN,
+    val userGender: Gender = Gender.UNKNOWN,
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "file_id", referencedColumnName = "id")
     val file: FileEntity? = null,
-    @Column(name = "phone_type")
-    val phoneType: String? = null,
     @Enumerated(EnumType.STRING)
     @Column(name = "os_type")
     val osType: OsType? = null,
-    @Enumerated(EnumType.STRING)
-    @Column(name = "app_type")
-    val appType: AppType? = null,
-    @Column(name = "have_unread_messages")
-    val haveUnreadMessages: Boolean? = false,
     @Column(name="notify")
     val notify: Boolean = true,
     @Column(name = "created_at", nullable = false)
@@ -119,10 +115,7 @@ data class SupplierEntity(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "registration_token")
     val registrationToken: String? = null,
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    @JoinColumn(name = "supplier_id")
-    val userAuthorities: Set<UserAuthorityEntity> = emptySet(),
-    ) {
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
@@ -135,6 +128,6 @@ data class SupplierEntity(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , name = $name , surName = $surName , patronymic = $patronymic , birthDate = $birthDate , enableStatus = $enableStatus , activityStatus = $activityStatus , status = $status , description = $description , rating = $rating , clientSize = $clientSize , sessionCount = $sessionCount , totalEarnings = $totalEarnings , experience = $experience , about = $about , videoFileId = $videoFileId , timeZone = $timeZone , specializationId = $specializationId , chatPerHour = $chatPerHour , chatPerMinute = $chatPerMinute , audioPerHour = $audioPerHour , audioPerMinute = $audioPerMinute , videoPerHour = $videoPerHour , videoPerMinute = $videoPerMinute , schedule = $schedule , socialMedias = $socialMedias , userGender = $userGender , file = $file , phoneType = $phoneType , osType = $osType , appType = $appType , haveUnreadMessages = $haveUnreadMessages , createdAt = $createdAt , updatedAt = $updatedAt )"
+        return this::class.simpleName + "(id = $id , email = $email , phone = $phone , name = $name , surname = $surname , patronymic = $patronymic , birthDate = $birthDate , socialMedias = $socialMedias , bankAccount = $bankAccount , avatar = $avatar , enableStatus = $enableStatus , activityStatus = $activityStatus , status = $status , description = $description , rating = $rating , feedbackCount = $feedbackCount , clientSize = $clientSize , sessionCount = $sessionCount , totalEarnings = $totalEarnings  , experience = $experience , about = $about , videoFileId = $videoFileId , timeZone = $timeZone , specializationId = $specializationId , chatPerHour = $chatPerHour , chatPerMinute = $chatPerMinute , audioPerHour = $audioPerHour , audioPerMinute = $audioPerMinute , videoPerHour = $videoPerHour , videoPerMinute = $videoPerMinute , schedule = $schedule , userGender = $userGender , file = $file , osType = $osType , notify = $notify , createdAt = $createdAt , updatedAt = $updatedAt , registrationToken = $registrationToken )"
     }
 }

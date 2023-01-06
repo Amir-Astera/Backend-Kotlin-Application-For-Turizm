@@ -3,6 +3,7 @@ package dev.december.jeterbackend.shared.features.clients.data.repositories.spec
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
@@ -84,5 +85,14 @@ class ClientSpecification {
                 }
             } else null
         }
+
+        fun isInOsType(osTypes: Set<OsType>?): Specification<ClientEntity>? {
+            return if (osTypes != null && osTypes.isNotEmpty()) {
+                Specification<ClientEntity> { root, _, _ ->
+                    root.get<AccountActivityStatus>("osType").`in`(osTypes)
+                }
+            } else null
+        }
+    }
     }
 }

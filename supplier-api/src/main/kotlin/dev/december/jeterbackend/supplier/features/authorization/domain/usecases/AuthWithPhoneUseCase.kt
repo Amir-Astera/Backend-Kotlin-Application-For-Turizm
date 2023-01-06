@@ -1,6 +1,7 @@
 package dev.december.jeterbackend.supplier.features.authorization.domain.usecases
 
 import com.google.firebase.auth.FirebaseAuth
+import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.supplier.features.authorization.presentation.dto.AuthResponseDto
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
@@ -20,8 +21,9 @@ class AuthWithPhoneUseCase (
             val user = firebaseAuth.getUserByPhoneNumber(phone) //?: return Data.Error(SupplierNotFoundInFirebasePhoneFailure())
             val email = user.email
             val password = credentials.last()
+            val osType = OsType.UNKNOWN.get(params.osType)
 
-            return service.auth(email, password)
+            return service.auth(email, password,osType)
         } catch (e:Exception) {
             Data.Error(RefreshTokenFailure())//SupplierNotFoundInFirebasePhoneFailure()
         }

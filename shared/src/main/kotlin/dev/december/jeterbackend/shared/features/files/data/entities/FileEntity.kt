@@ -13,6 +13,10 @@ data class FileEntity(
     @Enumerated(EnumType.STRING)
     @Column(name = "directory", nullable = false)
     val directory : FileDirectory,
+    @Column(name = "name", nullable = false)
+    val name: String,
+    @Column(name = "size", nullable = false)
+    val size: Long,
     @Column(name = "format", nullable = false)
     val format: String,
     @Column(name = "url", nullable = false)
