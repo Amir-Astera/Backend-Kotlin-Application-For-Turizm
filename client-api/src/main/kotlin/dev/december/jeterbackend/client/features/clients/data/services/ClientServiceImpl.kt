@@ -8,7 +8,9 @@ import dev.december.jeterbackend.client.features.clients.presentation.dto.Update
 import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
+import dev.december.jeterbackend.shared.features.clients.data.entities.extensions.client
 import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
+import dev.december.jeterbackend.shared.features.clients.domain.models.Client
 import dev.december.jeterbackend.shared.features.files.data.repositories.FileRepository
 import dev.december.jeterbackend.shared.features.files.domain.models.File
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
@@ -44,7 +46,7 @@ class ClientServiceImpl(
         birthDate: LocalDate?,
         gender: Gender?,
         avatar: File?,
-        registrationToken: String,
+        registrationToken: String?,
         successOnExists: ((ClientEntity) -> Boolean)?
     ): Data<String> {
         return try {
@@ -127,15 +129,14 @@ class ClientServiceImpl(
         }
     }
 
-    override suspend fun get(userId: String): Data<Unit> {//Client
+    override suspend fun get(userId: String): Data<Client> {
         return try {
             withContext(dispatcher) {
-//
-//                val clientEntity = userRepository.findByIdOrNull(userId)?.client ?: return@withContext Data.Error(
-//                    ClientNotFoundFailure()
-//                )
 
-                Data.Success(Unit)//clientEntity.client()
+                val clientEntity = clientRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(ClientNotFoundFailure()
+                )
+
+                Data.Success(clientEntity.client())
             }
         } catch (e: Exception) {
             println(e.message)

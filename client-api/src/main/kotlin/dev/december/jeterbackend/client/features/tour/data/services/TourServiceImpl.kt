@@ -1,27 +1,43 @@
 package dev.december.jeterbackend.client.features.tour.data.services
 
+import dev.december.jeterbackend.client.features.appointments.domain.errors.AppointmentGetListFailure
+import dev.december.jeterbackend.client.features.appointments.domain.model.ClientAppointment
+import dev.december.jeterbackend.client.features.clients.domain.errors.ClientNotFoundFailure
 import dev.december.jeterbackend.client.features.tour.domain.errors.*
-import dev.december.jeterbackend.client.features.tour.domain.model.ClientTour
 import dev.december.jeterbackend.client.features.tour.domain.services.TourService
+import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.core.utils.convert
+import dev.december.jeterbackend.shared.features.appointments.data.entities.AppointmentEntity
+import dev.december.jeterbackend.shared.features.appointments.domain.models.Appointment
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentStatus
+import dev.december.jeterbackend.shared.features.calendar.data.repositories.CalendarRepository
+import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
+import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
+import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
+import dev.december.jeterbackend.shared.features.suppliers.domain.models.SupplierStatus
+import dev.december.jeterbackend.shared.features.tours.data.entities.TourEntity
 import dev.december.jeterbackend.shared.features.tours.data.repositories.TourRepository
 import dev.december.jeterbackend.shared.features.tours.domain.models.TourStatus
 import dev.december.jeterbackend.shared.features.tours.domain.models.CommunicationType
+import dev.december.jeterbackend.shared.features.tours.domain.models.Tour
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 
 @Service
 class TourServiceImpl(
     private val dispatcher: CoroutineDispatcher,
-    private val appointmentRepository: TourRepository,
-//    private val userRepository: UserRepository,
-//    private val supplierRepository: SupplierRepository,
-//    private val calendarRepository: CalendarRepository,
+    private val tourRepository: TourRepository,
+    private val clientRepository: ClientRepository,
+    private val supplierRepository: SupplierRepository,
+    private val calendarRepository: CalendarRepository,
 ) : TourService {
 
     override suspend fun create(
@@ -69,76 +85,63 @@ class TourServiceImpl(
 
     override suspend fun get(
         id: String,
-        appointmentId: String
-    ): Data<ClientTour> {
+        tourId: String
+    ): Data<Tour> {
         return try {
             withContext(dispatcher) {
+                val clientId = clientRepository.findByIdOrNull(id) ?: return@withContext Data.Error(ClientNotFoundFailure())
 
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val clientId = user.client?.id ?:
-//                return@withContext Data.Error(ClientNotFoundFailure())
-//
-//                val appointmentEntity = appointmentRepository.findByIdAndClientId(appointmentId, clientId)
-//
-//                val supplier = appointmentEntity.supplier.supplier()
-//                val appointment = appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
-//                    mapOf("supplier" to supplier)
-//                )
-                Data.Success(ClientTour("", LocalDateTime.now(), LocalDateTime.now(), CommunicationType.CHAT, TourStatus.CLIENT_SUBMITTED, "", LocalDateTime.now(), 5, null))//appointment
+                val appointmentEntity = tourRepository.findByIdAndClientId(tourId, clientId.id) ?: return@withContext Data.Error(TourNotFoundFailure())
+
+                val supplier = appointmentEntity.supplier.supplier()
+                val tour = appointmentEntity.convert<TourEntity, Tour>(
+                    mapOf("supplier" to supplier)
+                )
+                Data.Success(tour)
             }
         } catch (e: Exception) {
             Data.Error(TourGetFailure())
         }
     }
 
-//    override suspend fun getAll(
-//        id: String,
-//        statuses: Set<AppointmentStatus>,
-//        reservationDateFrom: LocalDateTime,
-//        reservationDateTo: LocalDateTime
-//    ): Data<Map<LocalDate, List<ClientAppointment>>> {
-//        return try {
-//            withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val clientId = user.client?.id ?:
-//                return@withContext Data.Error(ClientNotFoundFailure())
-//
-//                val appointmentsEntity = appointmentRepository
-//                    .findAllByClientIdAndAppointmentStatusInAndReservationDateBetweenOrderByReservationDate(
-//                        clientId, statuses, reservationDateFrom, reservationDateTo
-//                    )
-//
-//                val appointments = appointmentsEntity.map { appointmentEntity ->
-//                    val supplier = appointmentEntity.supplier.supplier()
-//                    appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
-//                        mapOf(
-//                            "supplier" to supplier,
-//                        )
-//                    )
-//                }
-//
-//                val groupedAppointments = appointments.groupBy { it.reservationDate.toLocalDate() }
-//
-//                Data.Success(groupedAppointments)
-//            }
-//        } catch (e: Exception) {
-//            Data.Error(AppointmentGetListFailure())
-//        }
-//    }
+    override suspend fun getAll(
+        id: String,
+        statuses: Set<TourStatus>,
+        reservationDateFrom: LocalDateTime,
+        reservationDateTo: LocalDateTime
+    ): Data<Map<LocalDate, List<Appointment>>> {
+        return try {
+            withContext(dispatcher) {
+                val clientId = clientRepository.findByIdOrNull(id) ?: return@withContext Data.Error(ClientNotFoundFailure())
+
+                val appointmentsEntity = tourRepository.findAllByClientIdAndAppointmentStatusInAndReservationDateBetweenOrderByReservationDate(
+                        clientId.id, statuses, reservationDateFrom, reservationDateTo)
+
+                val appointments = appointmentsEntity.map { appointmentEntity ->
+                    val supplier = appointmentEntity.supplier.supplier()
+                    appointmentEntity.convert<TourEntity, Appointment>(
+                        mapOf(
+                            "supplier" to supplier,
+                        )
+                    )
+                }
+
+                val groupedAppointments = appointments.groupBy { it.reservationDate.toLocalDate() }
+
+                Data.Success(groupedAppointments)
+            }
+        } catch (e: Exception) {
+            Data.Error(AppointmentGetListFailure())
+        }
+    }
 
 //    override suspend fun getAllByClientAndSupplier(
 //        clientId: String,
 //        supplierId: String,
-//    ): Data<Map<LocalDate, List<ClientAppointment>>> {
+//    ): Data<Map<LocalDate, List<Appointment>>> {
 //        return try {
 //            withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(clientId) ?: return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val clientIdVerified = user.client?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
+//                val clientIdVerified = clientRepository.findByIdOrNull(clientId)?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
 //
 //                val supplierEntity = supplierRepository.findByIdOrNull(supplierId)
 //                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
@@ -147,11 +150,11 @@ class TourServiceImpl(
 //                    return@withContext Data.Error(SupplierNotFoundFailure())
 //
 //                val appointmentsEntity =
-//                    appointmentRepository.findAllByClientIdAndSupplierId(clientIdVerified, supplierEntity.id)
+//                    tourRepository.findAllByClientIdAndSupplierId(clientIdVerified, supplierEntity.id)
 //
 //                val appointments = appointmentsEntity.map { appointmentEntity ->
 //                    val supplier = appointmentEntity.supplier.supplier()
-//                    appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
+//                    appointmentEntity.convert<TourEntity, Appointment>(
 //                        mapOf("supplier" to supplier)
 //                    )
 //                }
@@ -169,7 +172,7 @@ class TourServiceImpl(
     override suspend fun delete(id: String): Data<Unit> {
         return try {
             withContext(dispatcher) {
-                appointmentRepository.deleteById(id)
+                tourRepository.deleteById(id)
                 Data.Success(Unit)
             }
         } catch (e: EmptyResultDataAccessException) {
@@ -183,7 +186,7 @@ class TourServiceImpl(
         return try {
 
             withContext(dispatcher) {
-                val oldEntity = appointmentRepository.findByIdOrNull(id)
+                val oldEntity = tourRepository.findByIdOrNull(id)
                     ?: return@withContext Data.Error(TourNotFoundFailure())
 
                 if (oldEntity.tourStatus == TourStatus.CONFIRMED) {
@@ -200,7 +203,7 @@ class TourServiceImpl(
                 val newEntity = oldEntity.copy(
                     tourStatus = newTourStatus,
                 )
-                appointmentRepository.save(newEntity)
+                tourRepository.save(newEntity)
                 Data.Success(newEntity.id)
             }
         } catch (e: Exception) {
@@ -212,7 +215,7 @@ class TourServiceImpl(
         return try {
 
             withContext(dispatcher) {
-                val oldEntity = appointmentRepository.findByIdOrNull(id)
+                val oldEntity = tourRepository.findByIdOrNull(id)
                     ?: return@withContext Data.Error(TourNotFoundFailure())
 
                 if (oldEntity.tourStatus == TourStatus.CANCELED) {
@@ -236,7 +239,7 @@ class TourServiceImpl(
                         return@withContext Data.Error(TourCancellationFailure())
                     }
 
-                appointmentRepository.save(newEntity)
+                tourRepository.save(newEntity)
                 Data.Success(newEntity.id)
             }
         } catch (e: Exception) {
@@ -247,12 +250,12 @@ class TourServiceImpl(
     override suspend fun complete(id: String): Data<String> {
         return try {
             withContext(dispatcher) {
-                val oldEntity = appointmentRepository.findByIdOrNull(id)
+                val oldEntity = tourRepository.findByIdOrNull(id)
                     ?: return@withContext Data.Error(TourNotFoundFailure())
                 val newEntity = oldEntity.copy(
                     tourStatus = TourStatus.COMPLETED,
                 )
-                appointmentRepository.save(newEntity)
+                tourRepository.save(newEntity)
                 Data.Success(newEntity.id)
             }
         } catch (e: Exception) {

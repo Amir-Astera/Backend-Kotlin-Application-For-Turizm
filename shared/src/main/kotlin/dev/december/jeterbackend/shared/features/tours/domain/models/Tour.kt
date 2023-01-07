@@ -5,7 +5,7 @@ import dev.december.jeterbackend.shared.features.clients.domain.models.Client
 import dev.december.jeterbackend.shared.features.files.domain.models.File
 import java.time.LocalDateTime
 
-
+//TODO Надо создать изменить таблицу календарь и создать новую для время,
 data class Tour(
     val id: String,
     val reservationDate: LocalDateTime = LocalDateTime.now(),

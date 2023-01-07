@@ -3,6 +3,8 @@ package dev.december.jeterbackend.shared.features.chats.data.repositories.specif
 import dev.december.jeterbackend.shared.features.chats.data.entities.ChatEntity
 import dev.december.jeterbackend.shared.features.chats.data.entities.MessageEntity
 import dev.december.jeterbackend.shared.features.chats.domain.models.ChatArchiveStatus
+import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.util.StringUtils
 import java.time.LocalDateTime
@@ -57,21 +59,21 @@ class ChatSpecification {
             } else null
         }
 
-//        fun findAllByClientId(client: ClientEntity): Specification<ChatEntity> {
-//            return Specification<ChatEntity> { root, _, criteriaBuilder ->
-//                    val clientGet = root.get<ChatEntity>("client")
-//                    criteriaBuilder.like(clientGet.get("id"), client.id)
-//            }
-//        }
+        fun findAllByClientId(client: ClientEntity): Specification<ChatEntity> {
+            return Specification<ChatEntity> { root, _, criteriaBuilder ->
+                    val clientGet = root.get<ChatEntity>("client")
+                    criteriaBuilder.like(clientGet.get("id"), client.id)
+            }
+        }
 
-//        fun findAllBySupplierId(supplier: SupplierEntity): Specification<ChatEntity> {
-//            return Specification<ChatEntity> { root, _, criteriaBuilder ->
-//                val predicate = mutableListOf<Predicate>()
-//                val supplierGet = root.get<ChatEntity>("supplier")
-//                predicate.add(supplierGet.get<String>("id").`in`(supplier.id))
-//                criteriaBuilder.and(*predicate.toTypedArray())
-//            }
-//        }
+        fun findAllBySupplierId(supplier: SupplierEntity): Specification<ChatEntity> {
+            return Specification<ChatEntity> { root, _, criteriaBuilder ->
+                val predicate = mutableListOf<Predicate>()
+                val supplierGet = root.get<ChatEntity>("supplier")
+                predicate.add(supplierGet.get<String>("id").`in`(supplier.id))
+                criteriaBuilder.and(*predicate.toTypedArray())
+            }
+        }
 
         fun containsMessage(message: String?): Specification<MessageEntity>? {
             return if (message != null && StringUtils.hasText(message)) {

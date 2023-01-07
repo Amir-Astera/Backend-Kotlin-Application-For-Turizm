@@ -13,6 +13,7 @@ import dev.december.jeterbackend.shared.features.promocodes.domain.errors.*
 import dev.december.jeterbackend.shared.features.promocodes.domain.services.PromocodeService
 import dev.december.jeterbackend.shared.features.promocodes.domain.models.*
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
+import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.springframework.data.domain.Page
@@ -228,35 +229,33 @@ class PromocodeServiceImpl(
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?
-    ): Data<Unit> {//Page<Promocode>
+    ): Data<Page<Promocode>> {
         return try {
             withContext(dispatcher) {
-//                val sortParams = sortField.getSortFields(sortDirection)
-//
-//                val pageable = PageRequest.of(page, size, sortParams)
-//
-//                val specificationByUserRole = if (userId != null) {
-//                    val idSupplier = (userRepository.findByIdOrNull(userId)
-//                        ?: return@withContext Data.Error(UserNotFoundFailure()))
-//                        .supplier?.id ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//                    PromocodeSpecification.supplierJoinFilter(idSupplier)
-//                } else if (supplierId != null) {
-//                    supplierRepository.findByIdOrNull(supplierId) ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//                    PromocodeSpecification.supplierJoinFilter(supplierId)
-//                } else null
-//                val specifications =
-//                    Specification.where(specificationByUserRole)
-//                        .and(PromocodeSpecification.hasDiscountType(types))
-//                        .and(PromocodeSpecification.containsCode(searchField))
-//                        .and(PromocodeSpecification.isGreaterThanCreatedAt(createdFrom))
-//                        .and(PromocodeSpecification.isLessThanCreatedAt(createdTo))
-//                        .and(PromocodeSpecification.hasStatus(statuses))
-//
-//                val promocodeEntities = promocodeRepository.findAll(specifications, pageable)
-//                val promocodes = promocodeEntities.map {
-//                    it.promocode()
-//                }
-                Data.Success(Unit)//promocodes
+                val sortParams = sortField.getSortFields(sortDirection)
+
+                val pageable = PageRequest.of(page, size, sortParams)
+
+                val specificationByUserRole = if (userId != null) {
+                    val idSupplier =  supplierRepository.findByIdOrNull(userId)?.id ?: return@withContext Data.Error(SupplierNotFoundFailure())
+                    PromocodeSpecification.supplierJoinFilter(idSupplier)
+                } else if (supplierId != null) {
+                    supplierRepository.findByIdOrNull(supplierId) ?: return@withContext Data.Error(SupplierNotFoundFailure())
+                    PromocodeSpecification.supplierJoinFilter(supplierId)
+                } else null
+                val specifications =
+                    Specification.where(specificationByUserRole)
+                        .and(PromocodeSpecification.hasDiscountType(types))
+                        .and(PromocodeSpecification.containsCode(searchField))
+                        .and(PromocodeSpecification.isGreaterThanCreatedAt(createdFrom))
+                        .and(PromocodeSpecification.isLessThanCreatedAt(createdTo))
+                        .and(PromocodeSpecification.hasStatus(statuses))
+
+                val promocodeEntities = promocodeRepository.findAll(specifications, pageable)
+                val promocodes = promocodeEntities.map {
+                    it.promocode()
+                }
+                Data.Success(promocodes)
             }
         } catch (e: Exception) {
             Data.Error(PromocodeGetFailure())

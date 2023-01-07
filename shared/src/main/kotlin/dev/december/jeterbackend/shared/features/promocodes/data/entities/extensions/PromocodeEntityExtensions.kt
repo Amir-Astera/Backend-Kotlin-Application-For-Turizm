@@ -2,6 +2,7 @@ package dev.december.jeterbackend.shared.features.promocodes.data.entities.exten
 
 import dev.december.jeterbackend.shared.features.promocodes.data.entities.PromocodeEntity
 import dev.december.jeterbackend.shared.core.utils.convert
+import dev.december.jeterbackend.shared.features.admin.data.entities.extensions.admin
 import dev.december.jeterbackend.shared.features.promocodes.domain.models.Promocode
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
 

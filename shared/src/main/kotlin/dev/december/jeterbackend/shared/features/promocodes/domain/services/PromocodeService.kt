@@ -56,7 +56,7 @@ interface PromocodeService {
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?
-    ): Data<Unit>//Page<Promocode>
+    ): Data<Page<Promocode>>
 
     suspend fun updateStatus(
         id: String,

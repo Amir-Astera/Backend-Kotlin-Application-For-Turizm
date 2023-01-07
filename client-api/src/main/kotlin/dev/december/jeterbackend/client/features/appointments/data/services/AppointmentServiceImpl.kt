@@ -4,13 +4,19 @@ import dev.december.jeterbackend.client.features.appointments.domain.errors.*
 import dev.december.jeterbackend.client.features.appointments.domain.model.ClientAppointment
 import dev.december.jeterbackend.client.features.appointments.domain.services.AppointmentService
 import dev.december.jeterbackend.client.features.clients.domain.errors.ClientNotFoundFailure
+import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.core.utils.convert
+import dev.december.jeterbackend.shared.features.appointments.data.entities.AppointmentEntity
 import dev.december.jeterbackend.shared.features.appointments.data.repositories.AppointmentRepository
 import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentStatus
 import dev.december.jeterbackend.shared.features.appointments.domain.models.CommunicationType
 import dev.december.jeterbackend.shared.features.calendar.data.repositories.CalendarRepository
+import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
 import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
+import dev.december.jeterbackend.shared.features.suppliers.domain.models.SupplierStatus
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.springframework.dao.EmptyResultDataAccessException
@@ -23,6 +29,7 @@ import java.time.LocalDateTime
 @Service
 class AppointmentServiceImpl(
     private val dispatcher: CoroutineDispatcher,
+    private val clientRepository: ClientRepository,
     private val appointmentRepository: AppointmentRepository,
     private val supplierRepository: SupplierRepository,
     private val calendarRepository: CalendarRepository,
@@ -72,23 +79,18 @@ class AppointmentServiceImpl(
     override suspend fun get(
         id: String,
         appointmentId: String
-    ): Data<Unit> {//ClientAppointment
+    ): Data<ClientAppointment> {
         return try {
             withContext(dispatcher) {
+                val clientId = clientRepository.findByIdOrNull(id)?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
 
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val clientId = user.client?.id ?:
-//                return@withContext Data.Error(ClientNotFoundFailure())
-//
-//                val appointmentEntity = appointmentRepository.findByIdAndClientId(appointmentId, clientId)
-//
-//                val supplier = appointmentEntity.supplier.supplier()
-//                val appointment = appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
-//                    mapOf("supplier" to supplier)
-//                )
-                Data.Success(Unit)//appointment
+                val appointmentEntity = appointmentRepository.findByIdAndClientId(appointmentId, clientId)
+
+                val supplier = appointmentEntity.supplier.supplier()
+                val appointment = appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
+                    mapOf("supplier" to supplier)
+                )
+                Data.Success(appointment)
             }
         } catch (e: Exception) {
             Data.Error(AppointmentGetFailure())
@@ -100,32 +102,28 @@ class AppointmentServiceImpl(
         statuses: Set<AppointmentStatus>,
         reservationDateFrom: LocalDateTime,
         reservationDateTo: LocalDateTime
-    ): Data<Unit> {//Map<LocalDate, List<ClientAppointment>>
+    ): Data<Map<LocalDate, List<ClientAppointment>>> {
         return try {
             withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val clientId = user.client?.id ?:
-//                return@withContext Data.Error(ClientNotFoundFailure())
-//
-//                val appointmentsEntity = appointmentRepository
-//                    .findAllByClientIdAndAppointmentStatusInAndReservationDateBetweenOrderByReservationDate(
-//                        clientId, statuses, reservationDateFrom, reservationDateTo
-//                    )
-//
-//                val appointments = appointmentsEntity.map { appointmentEntity ->
-//                    val supplier = appointmentEntity.supplier.supplier()
-//                    appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
-//                        mapOf(
-//                            "supplier" to supplier,
-//                        )
-//                    )
-//                }
-//
-//                val groupedAppointments = appointments.groupBy { it.reservationDate.toLocalDate() }
+                val clientId = clientRepository.findByIdOrNull(id)?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
 
-                Data.Success(Unit)//groupedAppointments
+                val appointmentsEntity = appointmentRepository
+                    .findAllByClientIdAndAppointmentStatusInAndReservationDateBetweenOrderByReservationDate(
+                        clientId, statuses, reservationDateFrom, reservationDateTo
+                    )
+
+                val appointments = appointmentsEntity.map { appointmentEntity ->
+                    val supplier = appointmentEntity.supplier.supplier()
+                    appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
+                        mapOf(
+                            "supplier" to supplier,
+                        )
+                    )
+                }
+
+                val groupedAppointments = appointments.groupBy { it.reservationDate.toLocalDate() }
+
+                Data.Success(groupedAppointments)
             }
         } catch (e: Exception) {
             Data.Error(AppointmentGetListFailure())
@@ -135,33 +133,31 @@ class AppointmentServiceImpl(
     override suspend fun getAllByClientAndSupplier(
         clientId: String,
         supplierId: String,
-    ): Data<Unit> {//Map<LocalDate, List<ClientAppointment>>
+    ): Data<Map<LocalDate, List<ClientAppointment>>> {
         return try {
             withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(clientId) ?: return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val clientIdVerified = user.client?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
-//
-//                val supplierEntity = supplierRepository.findByIdOrNull(supplierId)
-//                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                if (supplierEntity.enableStatus != AccountEnableStatus.ENABLED || supplierEntity.status != SupplierStatus.APPROVED)
-//                    return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val appointmentsEntity =
-//                    appointmentRepository.findAllByClientIdAndSupplierId(clientIdVerified, supplierEntity.id)
-//
-//                val appointments = appointmentsEntity.map { appointmentEntity ->
-//                    val supplier = appointmentEntity.supplier.supplier()
-//                    appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
-//                        mapOf("supplier" to supplier)
-//                    )
-//                }
-//
-//                val groupedAppointments =
-//                    appointments.sortedByDescending { it.reservationDate }.groupBy { it.reservationDate.toLocalDate() }
+                val clientIdVerified = clientRepository.findByIdOrNull(clientId)?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
 
-                Data.Success(Unit)//groupedAppointments
+                val supplierEntity = supplierRepository.findByIdOrNull(supplierId)
+                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
+
+                if (supplierEntity.enableStatus != AccountEnableStatus.ENABLED || supplierEntity.status != SupplierStatus.APPROVED)
+                    return@withContext Data.Error(SupplierNotFoundFailure())
+
+                val appointmentsEntity =
+                    appointmentRepository.findAllByClientIdAndSupplierId(clientIdVerified, supplierEntity.id)
+
+                val appointments = appointmentsEntity.map { appointmentEntity ->
+                    val supplier = appointmentEntity.supplier.supplier()
+                    appointmentEntity.convert<AppointmentEntity, ClientAppointment>(
+                        mapOf("supplier" to supplier)
+                    )
+                }
+
+                val groupedAppointments =
+                    appointments.sortedByDescending { it.reservationDate }.groupBy { it.reservationDate.toLocalDate() }
+
+                Data.Success(groupedAppointments)
             }
         } catch (e: Exception) {
             Data.Error(AppointmentGetListFailure())

@@ -94,5 +94,5 @@ class ClientSpecification {
             } else null
         }
     }
-    }
+
 }

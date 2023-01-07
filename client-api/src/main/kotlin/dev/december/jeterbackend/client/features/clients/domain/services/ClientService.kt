@@ -4,6 +4,7 @@ import dev.december.jeterbackend.client.features.clients.presentation.dto.Update
 import dev.december.jeterbackend.shared.core.domain.model.Gender
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
+import dev.december.jeterbackend.shared.features.clients.domain.models.Client
 import dev.december.jeterbackend.shared.features.files.domain.models.File
 import dev.december.jeterbackend.shared.features.suppliers.domain.models.Supplier
 import org.springframework.data.domain.Page
@@ -18,7 +19,7 @@ interface ClientService {
         birthDate: LocalDate?,
         gender: Gender?,
         avatar: File?,
-        registrationToken: String,
+        registrationToken: String?,
         successOnExists: ((ClientEntity) -> Boolean)? = null,
     ): Data<String>
 
@@ -26,7 +27,7 @@ interface ClientService {
 
     suspend fun get(
         userId: String
-    ): Data<Unit>//Client
+    ): Data<Client>
 
     suspend fun update(
         userId: String,

@@ -1,8 +1,14 @@
 package dev.december.jeterbackend.client.features.tour.domain.services
 
+import dev.december.jeterbackend.client.features.appointments.domain.model.ClientAppointment
 import dev.december.jeterbackend.client.features.tour.domain.model.ClientTour
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.appointments.domain.models.Appointment
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentStatus
 import dev.december.jeterbackend.shared.features.tours.domain.models.CommunicationType
+import dev.december.jeterbackend.shared.features.tours.domain.models.Tour
+import dev.december.jeterbackend.shared.features.tours.domain.models.TourStatus
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface TourService {
@@ -14,16 +20,16 @@ interface TourService {
         supplierId: String,
     ): Data<String>
 
-    suspend fun get(id: String, appointmentId: String): Data<ClientTour>
-//    suspend fun getAll(id: String,
-//                       statuses: Set<AppointmentStatus>,
-//                       reservationDateFrom: LocalDateTime,
-//                       reservationDateTo: LocalDateTime
-//    ): Data<Map<LocalDate, List<ClientAppointment>>>
+    suspend fun get(id: String, tourId: String): Data<Tour>//нужно возврощать какой то тур
+    suspend fun getAll(id: String,
+                       statuses: Set<TourStatus>,
+                       reservationDateFrom: LocalDateTime,
+                       reservationDateTo: LocalDateTime
+    ): Data<Map<LocalDate, List<Appointment>>>//Todo тут вместо localDate должен быть Tour
 
 //    suspend fun getAllByClientAndSupplier(clientId: String,
 //                                          supplierId: String
-//    ): Data<Map<LocalDate, List<ClientAppointment>>>
+//    ): Data<Map<LocalDate, List<Appointment>>>
 
     suspend fun delete(id: String): Data<Unit>
     suspend fun confirm(id: String): Data<String>

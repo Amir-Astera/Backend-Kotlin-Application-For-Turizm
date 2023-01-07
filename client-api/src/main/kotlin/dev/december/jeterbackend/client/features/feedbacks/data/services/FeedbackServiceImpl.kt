@@ -1,17 +1,33 @@
 package dev.december.jeterbackend.client.features.feedbacks.data.services
 
+import dev.december.jeterbackend.client.features.clients.domain.errors.ClientNotFoundFailure
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import dev.december.jeterbackend.client.features.feedbacks.domain.services.FeedbackService
 import dev.december.jeterbackend.client.features.feedbacks.domain.errors.FeedbackCreateFailure
 import dev.december.jeterbackend.client.features.feedbacks.domain.errors.FeedbackDeleteFailure
 import dev.december.jeterbackend.client.features.feedbacks.domain.errors.FeedbackListGetFailure
 import dev.december.jeterbackend.client.features.feedbacks.domain.errors.FeedbackNotFoundFailure
+import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
+import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.core.utils.convert
+import dev.december.jeterbackend.shared.features.clients.data.entities.extensions.client
+import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
+import dev.december.jeterbackend.shared.features.feedbacks.data.entities.FeedbackEntity
 import dev.december.jeterbackend.shared.features.feedbacks.data.repositories.FeedbackRepository
+import dev.december.jeterbackend.shared.features.feedbacks.data.repositories.specifications.FeedbackSpecification
+import dev.december.jeterbackend.shared.features.feedbacks.domain.models.Feedback
+import dev.december.jeterbackend.shared.features.feedbacks.domain.models.FeedbackSortField
 import dev.december.jeterbackend.shared.features.feedbacks.domain.models.FeedbackStatus
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
+import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
+import dev.december.jeterbackend.shared.features.suppliers.domain.models.SupplierStatus
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -21,6 +37,7 @@ import java.time.LocalDateTime
 class FeedbackServiceImpl(
     private val feedbackRepository: FeedbackRepository,
     private val supplierRepository: SupplierRepository,
+    private val clientRepository: ClientRepository,
     private val dispatcher: CoroutineDispatcher,
 ) : FeedbackService {
 
@@ -101,38 +118,34 @@ class FeedbackServiceImpl(
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?,
-    ): Data<Unit> {//Page<Feedback>
+    ): Data<Page<Feedback>> {
         return try {
             withContext(dispatcher) {
+                val clientId = clientRepository.findByIdOrNull(id)?.id ?: return@withContext Data.Error(ClientNotFoundFailure())
 
-//                val clientId = (
-//                    userRepository.findByIdOrNull(id) ?:
-//                        return@withContext Data.Error(UserNotFoundFailure())).client?.id ?:
-//                    return@withContext Data.Error(ClientNotFoundFailure())
-//
-//                val sortParams = FeedbackSortField.CREATED_AT.getSortFields(SortDirection.DESC)
-//
-//                val pageable = PageRequest.of(page, size, sortParams)
-//
-//                val specifications =
-//                    Specification.where(FeedbackSpecification.isInStatus(setOf( FeedbackStatus.APPROVED)))
-//                        .and(FeedbackSpecification.isGreaterThanCreatedAt(createdFrom))
-//                        .and(FeedbackSpecification.isLessThanCreatedAt(createdTo))
-//                        .and(FeedbackSpecification.clientJoinFilter(clientId))
-//
-//                val entities = feedbackRepository.findAll(specifications, pageable)
-//
-//                val feedbacks = entities.map { feedbackEntity ->
-//                    val supplier = feedbackEntity.supplier.supplier()
-//                    val client = feedbackEntity.client.client()
-//                    feedbackEntity.convert<FeedbackEntity, Feedback>(
-//                        mapOf(
-//                            "supplier" to supplier,
-//                            "client" to client,
-//                        )
-//                    )
-//                }
-                Data.Success(Unit)//feedbacks
+                val sortParams = FeedbackSortField.CREATED_AT.getSortFields(SortDirection.DESC)
+
+                val pageable = PageRequest.of(page, size, sortParams)
+
+                val specifications =
+                    Specification.where(FeedbackSpecification.isInStatus(setOf( FeedbackStatus.APPROVED)))
+                        .and(FeedbackSpecification.isGreaterThanCreatedAt(createdFrom))
+                        .and(FeedbackSpecification.isLessThanCreatedAt(createdTo))
+                        .and(FeedbackSpecification.clientJoinFilter(clientId))
+
+                val entities = feedbackRepository.findAll(specifications, pageable)
+
+                val feedbacks = entities.map { feedbackEntity ->
+                    val supplier = feedbackEntity.supplier.supplier()
+                    val client = feedbackEntity.client.client()
+                    feedbackEntity.convert<FeedbackEntity, Feedback>(
+                        mapOf(
+                            "supplier" to supplier,
+                            "client" to client,
+                        )
+                    )
+                }
+                Data.Success(feedbacks)
             }
         } catch (e: Exception) {
             Data.Error(FeedbackListGetFailure())
@@ -143,33 +156,33 @@ class FeedbackServiceImpl(
         supplierId: String,
         page: Int,
         size: Int,
-    ): Data<Unit> {//Page<Feedback>
+    ): Data<Page<Feedback>> {
         return try {
             withContext(dispatcher) {
-//                val supplierEntity = supplierRepository.findByIdOrNull(supplierId)
-//                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                if (supplierEntity.enableStatus != AccountEnableStatus.ENABLED || supplierEntity.status != SupplierStatus.APPROVED)
-//                    return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val sortParams = FeedbackSortField.CREATED_AT.getSortFields(SortDirection.DESC)
-//
-//                val pageable = PageRequest.of(page, size, sortParams)
-//
-//                val specifications =
-//                    Specification.where(FeedbackSpecification.isInStatus(setOf( FeedbackStatus.APPROVED)))
-//                        .and(FeedbackSpecification.supplierJoinFilter(supplierEntity.id))
-//
-//                val entities = feedbackRepository.findAll(specifications, pageable)
-//
-//                val feedbacks: Page<Feedback> = entities.map { feedback ->
-//                    val supplier = feedback.supplier.supplier()
-//                    val client = feedback.client.client()
-//                    feedback.convert<FeedbackEntity, Feedback>(
-//                        mapOf("supplier" to supplier, "client" to client))
-//                }
+                val supplierEntity = supplierRepository.findByIdOrNull(supplierId)
+                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
 
-                Data.Success(Unit)//feedbacks
+                if (supplierEntity.enableStatus != AccountEnableStatus.ENABLED || supplierEntity.status != SupplierStatus.APPROVED)
+                    return@withContext Data.Error(SupplierNotFoundFailure())
+
+                val sortParams = FeedbackSortField.CREATED_AT.getSortFields(SortDirection.DESC)
+
+                val pageable = PageRequest.of(page, size, sortParams)
+
+                val specifications =
+                    Specification.where(FeedbackSpecification.isInStatus(setOf( FeedbackStatus.APPROVED)))
+                        .and(FeedbackSpecification.supplierJoinFilter(supplierEntity.id))
+
+                val entities = feedbackRepository.findAll(specifications, pageable)
+
+                val feedbacks: Page<Feedback> = entities.map { feedback ->
+                    val supplier = feedback.supplier.supplier()
+                    val client = feedback.client.client()
+                    feedback.convert<FeedbackEntity, Feedback>(
+                        mapOf("supplier" to supplier, "client" to client))
+                }
+
+                Data.Success(feedbacks)
             }
         } catch (e: Exception) {
             Data.Error(FeedbackListGetFailure())

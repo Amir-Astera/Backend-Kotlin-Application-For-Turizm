@@ -9,7 +9,6 @@ import dev.december.jeterbackend.shared.features.suppliers.domain.models.Supplie
 import dev.december.jeterbackend.shared.features.suppliers.domain.models.SupplierCertificateResponse
 import dev.december.jeterbackend.shared.features.suppliers.domain.models.SupplierEducationResponse
 import dev.december.jeterbackend.shared.core.utils.convert
-import dev.december.jeterbackend.shared.features.authorities.data.entities.authority
 import dev.december.jeterbackend.shared.features.authorities.domain.models.AuthorityCode
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
 import dev.december.jeterbackend.shared.features.clients.domain.models.Client

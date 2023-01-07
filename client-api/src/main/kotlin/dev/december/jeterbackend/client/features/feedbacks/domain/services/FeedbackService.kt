@@ -2,6 +2,8 @@ package dev.december.jeterbackend.client.features.feedbacks.domain.services
 
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.feedbacks.domain.models.Feedback
+import org.springframework.data.domain.Page
 import java.time.LocalDateTime
 
 interface FeedbackService {
@@ -27,11 +29,11 @@ interface FeedbackService {
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?,
-    ): Data<Unit>//Page<Feedback>
+    ): Data<Page<Feedback>>
 
     suspend fun getListBySupplier(
         supplierId: String,
         page: Int,
         size: Int
-    ): Data<Unit>//Page<Feedback>
+    ): Data<Page<Feedback>>
 }

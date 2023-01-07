@@ -16,16 +16,16 @@ interface AppointmentService {
         supplierId: String,
     ): Data<String>
 
-    suspend fun get(id: String, appointmentId: String): Data<Unit>//ClientAppointment
+    suspend fun get(id: String, appointmentId: String): Data<ClientAppointment>
     suspend fun getAll(id: String,
                        statuses: Set<AppointmentStatus>,
                        reservationDateFrom: LocalDateTime,
                        reservationDateTo: LocalDateTime
-    ): Data<Unit>//Map<LocalDate, List<ClientAppointment>>
+    ): Data<Map<LocalDate, List<ClientAppointment>>>
 
     suspend fun getAllByClientAndSupplier(clientId: String,
                                           supplierId: String
-    ): Data<Unit>//Map<LocalDate, List<ClientAppointment>>
+    ): Data<Map<LocalDate, List<ClientAppointment>>>
 
     suspend fun delete(id: String): Data<Unit>
     suspend fun confirm(id: String): Data<String>
