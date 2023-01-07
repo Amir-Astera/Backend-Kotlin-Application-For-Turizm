@@ -36,8 +36,8 @@ interface TourService {
     suspend fun cancel(id: String): Data<String>
     suspend fun complete(id: String): Data<String>
 
-    suspend fun suggestAnotherTime(
-        id: String,
-        reservationDate: LocalDateTime
-    ): Data<String>
+//    suspend fun suggestAnotherTime(
+//        id: String,
+//        reservationDate: LocalDateTime
+//    ): Data<String>
 }

@@ -47,9 +47,9 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
-//tasks.bootJar {
-//	archiveFileName.set("${project.properties["name"]}.jar")
-//}
+tasks.bootJar {
+	archiveFileName.set("${project.properties["name"]}.jar")
+}
 
 tasks.withType<KotlinCompile> {
 	kotlinOptions {

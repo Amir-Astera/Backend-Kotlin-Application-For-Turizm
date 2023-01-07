@@ -65,7 +65,7 @@ security:
     enable-logout-everywhere: false
     session-expiry-in-days: 5
     api-identity-url: https://identitytoolkit.googleapis.com/v1/accounts
-    api-key: ${FIREBASE_API_KEY}
+    api-key: ${FIREBASE_API_KEY_CLIENT}
   allow-credentials: true
   allowed-origins:
     - "*"
@@ -95,6 +95,7 @@ security:
     - /auth
     - /authPhone
   allowed-post-public-apis:
+    - /api/orders/secure
     - /api/clients
     - /api/clients/restore
     - /refreshToken

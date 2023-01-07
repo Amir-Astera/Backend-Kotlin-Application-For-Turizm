@@ -1,6 +1,8 @@
 package dev.december.jeterbackend.client.features.tour.presentation.rest
 
 import dev.december.jeterbackend.client.core.config.security.SessionUser
+import dev.december.jeterbackend.client.features.appointments.domain.usecases.GetAppointmentParams
+import dev.december.jeterbackend.client.features.appointments.domain.usecases.GetAppointmentUseCase
 import dev.december.jeterbackend.client.features.tour.presentation.dto.CreateTourData
 import dev.december.jeterbackend.client.features.tour.domain.usecases.*
 import dev.december.jeterbackend.shared.core.results.Data
@@ -24,13 +26,13 @@ import java.time.LocalDateTime
 @Tag(name = "tours", description = "The Tours API")
 class TourController(
     private val createTourUseCase: CreateTourUseCase,
-    private val getAppointmentListUseCase: GetAppointmentListUseCase,
+    private val getTourListUseCase: GetTourListUseCase,
     private val deleteTourUseCase: DeleteTourUseCase,
     private val confirmTourUseCase: ConfirmTourUseCase,
     private val completeTourUseCase: CompleteTourUseCase,
     private val cancelTourUseCase: CancelTourUseCase,
-    private val getAppointmentUseCase: GetAppointmentUseCase,
-    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase
+    private val getTourUseCase: GetTourUseCase,
+//    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase
 ) {
 
     @SecurityRequirement(name = "security_auth")
@@ -59,8 +61,8 @@ class TourController(
         @Parameter(hidden = true) authentication: Authentication,
     ): Mono<ResponseEntity<Any>> {
         return mono {
-            getAppointmentUseCase(
-                GetAppointmentParams(
+            getTourUseCase(
+                GetTourParams(
                     (authentication.principal as SessionUser).id,
                     appointmentId
                 )
@@ -90,8 +92,8 @@ class TourController(
         @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
         reservationDateTo: LocalDateTime,
     ): Mono<ResponseEntity<Any>> {
-        return mono { getAppointmentListUseCase(
-            GetAppointmentsParams(
+        return mono { getTourListUseCase(
+            GetToursParams(
                 (authentication.principal as SessionUser).id,
                 statuses,
                 reservationDateFrom,
@@ -176,29 +178,29 @@ class TourController(
             }
         }
     }
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/suggest-another-time")
-    fun suggestAnotherTime(
-        @PathVariable id: String,
-        @RequestParam
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        reservationDateTime: LocalDateTime
-    ): Mono<ResponseEntity<Any>> {
-        return mono {
-            suggestAnotherTimeUseCase(
-                SuggestAnotherTimeParams(
-                    id, reservationDateTime
-                )
-            )
-        }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/suggest-another-time")
+//    fun suggestAnotherTime(
+//        @PathVariable id: String,
+//        @RequestParam
+//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//        reservationDateTime: LocalDateTime
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono {
+//            suggestAnotherTimeUseCase(
+//                SuggestAnotherTimeParams(
+//                    id, reservationDateTime
+//                )
+//            )
+//        }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
 }

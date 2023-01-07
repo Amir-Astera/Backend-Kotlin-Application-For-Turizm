@@ -41,7 +41,7 @@ class OrderServiceImpl(
         cardCryptogram: String,
         communicationType: CommunicationType,
         ipAddress: String
-    ): Data<Unit> {//Order
+    ): Data<Unit> {
         return try {
             withContext(dispatcher) {
                 val supplier = supplierRepository.findByIdOrNull(supplierId) ?: return@withContext Data.Error(SupplierNotFoundFailure())

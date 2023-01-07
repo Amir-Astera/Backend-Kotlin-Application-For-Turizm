@@ -6,6 +6,6 @@ import dev.december.jeterbackend.shared.features.orders.domain.models.Order
 
 
 interface OrderService {
-    suspend fun pay(clientId: String, supplierId: String, cardCryptogram: String, communicationType: CommunicationType, ipAddress: String): Data<Order>
-    suspend fun payWithSecure(md: Long, paRes: String, clientId: String): Data<Order>
+    suspend fun pay(clientId: String, supplierId: String, cardCryptogram: String, communicationType: CommunicationType, ipAddress: String): Data<Unit>//Order
+    suspend fun payWithSecure(md: Long, paRes: String, clientId: String): Data<Unit>//Order
 }

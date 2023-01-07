@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component
 @Component
 class PayWithSecureUseCase(
     private val orderService: OrderService
-): UseCase<PayWithSecureParams, Order> {
-    override suspend fun invoke(params: PayWithSecureParams): Data<Order> {
+): UseCase<PayWithSecureParams, Unit> {
+    override suspend fun invoke(params: PayWithSecureParams): Data<Unit> {//Order
         return orderService.payWithSecure(params.md, params.paRes, params.clientId)
     }
 }

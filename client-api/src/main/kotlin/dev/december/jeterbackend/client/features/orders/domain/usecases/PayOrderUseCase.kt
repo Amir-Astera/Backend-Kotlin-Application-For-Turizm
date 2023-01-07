@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component
 @Component
 class PayOrderUseCase(
     private val orderService: OrderService
-) : UseCase<PayOrderParams, Order> {
-    override suspend fun invoke(params: PayOrderParams): Data<Order> {
+) : UseCase<PayOrderParams, Unit> {
+    override suspend fun invoke(params: PayOrderParams): Data<Unit> {//Order
         return orderService.pay(params. clientId, params.supplierId, params.cardCryptogram, params.communicationType, params.ipAddress)
     }
 }

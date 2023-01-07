@@ -263,49 +263,49 @@ class TourServiceImpl(
         }
     }
 
-    override suspend fun suggestAnotherTime(
-        id: String,
-        reservationDate: LocalDateTime
-    ): Data<String> {
-        return try {
-            withContext(dispatcher) {
-//                val oldEntity = appointmentRepository.findByIdOrNull(id)
-//                    ?: return@withContext Data.Error(AppointmentNotFoundFailure())
-//
-//                val supplierId = oldEntity.supplier.id
-//
-//                val firstDayOfMonth = reservationDate.toLocalDate().withDayOfMonth(1)
-//                val calendar = calendarRepository.findBySupplierIdAndFirstDayOfMonth(supplierId, firstDayOfMonth)
-//                    ?: return@withContext Data.Error(CalendarNotFoundFailure())
-//                if (!calendar.workingDays.contains(reservationDate.toLocalDate())) {
-//                    return@withContext Data.Error(SupplierNotWorkingFailure())
-//                }
-//
-//                val possibleAppointmentStates = setOf(
-//                    AppointmentStatus.CLIENT_SUBMITTED,
-//                    AppointmentStatus.SUPPLIER_SUBMITTED,
-//                    AppointmentStatus.CONFIRMED
-//                )
-//
-//                val newAppointmentStatus =
-//                    if (possibleAppointmentStates.contains(oldEntity.appointmentStatus)) {
-//                       AppointmentStatus.CLIENT_SUBMITTED
-//                    } else {
-//                        return@withContext Data.Error(AppointmentConfirmationFailure())
-//                    }
-//
-//                val oldReservationDate = oldEntity.reservationDate
-//
-//                val newEntity = oldEntity.copy(
-//                    appointmentStatus = newAppointmentStatus,
-//                    reservationDate = reservationDate,
-//                    oldReservationDate = oldReservationDate
-//                )
-//                appointmentRepository.save(newEntity)
-                Data.Success("")//newEntity.id
-            }
-        } catch (e: Exception) {
-            Data.Error(TourUpdateFailure())
-        }
-    }
+//    override suspend fun suggestAnotherTime(
+//        id: String,
+//        reservationDate: LocalDateTime
+//    ): Data<String> {
+//        return try {
+//            withContext(dispatcher) {
+////                val oldEntity = appointmentRepository.findByIdOrNull(id)
+////                    ?: return@withContext Data.Error(AppointmentNotFoundFailure())
+////
+////                val supplierId = oldEntity.supplier.id
+////
+////                val firstDayOfMonth = reservationDate.toLocalDate().withDayOfMonth(1)
+////                val calendar = calendarRepository.findBySupplierIdAndFirstDayOfMonth(supplierId, firstDayOfMonth)
+////                    ?: return@withContext Data.Error(CalendarNotFoundFailure())
+////                if (!calendar.workingDays.contains(reservationDate.toLocalDate())) {
+////                    return@withContext Data.Error(SupplierNotWorkingFailure())
+////                }
+////
+////                val possibleAppointmentStates = setOf(
+////                    AppointmentStatus.CLIENT_SUBMITTED,
+////                    AppointmentStatus.SUPPLIER_SUBMITTED,
+////                    AppointmentStatus.CONFIRMED
+////                )
+////
+////                val newAppointmentStatus =
+////                    if (possibleAppointmentStates.contains(oldEntity.appointmentStatus)) {
+////                       AppointmentStatus.CLIENT_SUBMITTED
+////                    } else {
+////                        return@withContext Data.Error(AppointmentConfirmationFailure())
+////                    }
+////
+////                val oldReservationDate = oldEntity.reservationDate
+////
+////                val newEntity = oldEntity.copy(
+////                    appointmentStatus = newAppointmentStatus,
+////                    reservationDate = reservationDate,
+////                    oldReservationDate = oldReservationDate
+////                )
+////                appointmentRepository.save(newEntity)
+//                Data.Success("")//newEntity.id
+//            }
+//        } catch (e: Exception) {
+//            Data.Error(TourUpdateFailure())
+//        }
+//    }
 }
