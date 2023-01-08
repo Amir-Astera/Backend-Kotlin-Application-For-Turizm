@@ -27,9 +27,9 @@ class TourController(
     private val completeTourUseCase: CompleteTourUseCase,
     private val cancelTourUseCase: CancelTourUseCase,
     private val getTourUseCase: GetTourUseCase,
-    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase,
-    private val getSupplierFreeTimeUseCase: GetSupplierFreeTimeUseCase,
-    private val getNotConfirmedTourListUseCase: GetNotConfirmedTourListUseCase
+//    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase,
+//    private val getSupplierFreeTimeUseCase: GetSupplierFreeTimeUseCase,
+//    private val getNotConfirmedTourListUseCase: GetNotConfirmedTourListUseCase
 ) {
 
     @SecurityRequirement(name = "security_auth")
@@ -157,85 +157,85 @@ class TourController(
         }
     }
 
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/suggest-another-time")
-    fun suggestAnotherTime(
-        @Parameter(hidden = true) request: ServerHttpRequest,
-        authentication: Authentication,
-        @PathVariable id: String,
-        @RequestParam
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        reservationDateTime: LocalDateTime
-    ): Mono<ResponseEntity<Any>> {
-
-        val user = authentication.principal as SessionUser
-        val userId = user.id
-
-        return mono { suggestAnotherTimeUseCase(
-            SuggestAnotherTimeParams(
-                userId, id, reservationDateTime
-            )
-        ) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
-
-    @SecurityRequirement(name = "security_auth")
-    @GetMapping("/get-free-hours")
-    fun getFreeTime(
-        @Parameter(hidden = true) request: ServerHttpRequest,
-        authentication: Authentication,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") date: LocalDate
-    ): Mono<ResponseEntity<Any>> {
-        val user = authentication.principal as SessionUser
-        val userId = user.id
-
-        return mono { getSupplierFreeTimeUseCase(
-            GetSupplierFreeTimeParams(userId, date)
-        ) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().body(it.data)
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
-
-    @SecurityRequirement(name = "security_auth")
-    @GetMapping("/not-confirmed")
-    fun getNotConfirmed(
-        @Parameter(hidden = true) authentication: Authentication,
-        @RequestParam(required = false, defaultValue = "0")
-        page: Int,
-        @RequestParam(required = false, defaultValue = "10")
-        size: Int,
-    ): Mono<ResponseEntity<Any>> {
-        return mono { getNotConfirmedTourListUseCase(
-            GetNotConfirmedTourListParams(
-                (authentication.principal as SessionUser).id,
-                page,
-                size,
-            )
-        ) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().body(it.data)
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/suggest-another-time")
+//    fun suggestAnotherTime(
+//        @Parameter(hidden = true) request: ServerHttpRequest,
+//        authentication: Authentication,
+//        @PathVariable id: String,
+//        @RequestParam
+//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//        reservationDateTime: LocalDateTime
+//    ): Mono<ResponseEntity<Any>> {
+//
+//        val user = authentication.principal as SessionUser
+//        val userId = user.id
+//
+//        return mono { suggestAnotherTimeUseCase(
+//            SuggestAnotherTimeParams(
+//                userId, id, reservationDateTime
+//            )
+//        ) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
+//
+//    @SecurityRequirement(name = "security_auth")
+//    @GetMapping("/get-free-hours")
+//    fun getFreeTime(
+//        @Parameter(hidden = true) request: ServerHttpRequest,
+//        authentication: Authentication,
+//        @DateTimeFormat(pattern = "yyyy-MM-dd") date: LocalDate
+//    ): Mono<ResponseEntity<Any>> {
+//        val user = authentication.principal as SessionUser
+//        val userId = user.id
+//
+//        return mono { getSupplierFreeTimeUseCase(
+//            GetSupplierFreeTimeParams(userId, date)
+//        ) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().body(it.data)
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
+//
+//    @SecurityRequirement(name = "security_auth")
+//    @GetMapping("/not-confirmed")
+//    fun getNotConfirmed(
+//        @Parameter(hidden = true) authentication: Authentication,
+//        @RequestParam(required = false, defaultValue = "0")
+//        page: Int,
+//        @RequestParam(required = false, defaultValue = "10")
+//        size: Int,
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono { getNotConfirmedTourListUseCase(
+//            GetNotConfirmedTourListParams(
+//                (authentication.principal as SessionUser).id,
+//                page,
+//                size,
+//            )
+//        ) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().body(it.data)
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
 
 }
