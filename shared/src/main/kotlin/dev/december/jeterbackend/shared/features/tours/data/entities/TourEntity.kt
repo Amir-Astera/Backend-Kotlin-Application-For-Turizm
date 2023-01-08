@@ -1,8 +1,8 @@
 package dev.december.jeterbackend.shared.features.tours.data.entities
 
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentStatus
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
-import dev.december.jeterbackend.shared.features.tours.domain.models.TourStatus
 import dev.december.jeterbackend.shared.features.tours.domain.models.CommunicationType
 import dev.december.jeterbackend.shared.features.files.data.entities.FileEntity
 import java.time.LocalDateTime
@@ -31,7 +31,7 @@ data class TourEntity(
     val description: String,
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    val tourStatus: TourStatus,
+    val appointmentStatus: AppointmentStatus,
     @Column(name = "createdAt", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "updatedAt", nullable = false)
@@ -43,7 +43,6 @@ data class TourEntity(
     val receipt: FileEntity? = null,
 ) {
     override fun toString(): String {
-        // supplier=${supplier.id}, client=${client.id},
-        return "AppointmentEntity(id='$id', reservationDate=$reservationDate, communicationType=$communicationType, description='$description', appointmentStatus=$tourStatus, createdAt=$createdAt, updatedAt=$updatedAt)"
+        return "AppointmentEntity(id='$id', reservationDate=$reservationDate, communicationType=$communicationType, supplier=${supplier.id}, client=${client.id}, description='$description', appointmentStatus=$appointmentStatus, createdAt=$createdAt, updatedAt=$updatedAt)"
     }
 }

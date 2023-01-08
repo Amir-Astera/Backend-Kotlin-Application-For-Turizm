@@ -58,6 +58,7 @@ class AuthController(
     ): Mono<ResponseEntity<Any>> {
         val authorizationHeader = request.headers.getFirst(HttpHeaders.AUTHORIZATION) ?: ""
         val encodedToken = authorizationHeader.split(' ').lastOrNull() ?: ""
+        println(encodedToken)
         return mono { authWithPhoneUseCase(AuthParams(encodedToken, osType)) }.map {
             when (it) {
                 is Data.Success -> {

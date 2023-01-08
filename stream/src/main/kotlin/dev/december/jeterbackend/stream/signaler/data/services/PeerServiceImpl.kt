@@ -1,19 +1,20 @@
 package dev.december.jeterbackend.stream.signaler.data.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import dev.december.jeterbackend.stream.signaler.errors.AppointmentNotFoundFailure
 import org.springframework.stereotype.Service
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import dev.december.jeterbackend.stream.signaler.data.entities.ParamEntity
 import dev.december.jeterbackend.stream.signaler.domain.services.PeerService
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentStatus
 import dev.december.jeterbackend.shared.features.tours.data.repositories.TourRepository
 import dev.december.jeterbackend.shared.features.tours.domain.models.TourStatus
 import dev.december.jeterbackend.stream.signaler.data.model.AppointmentModel
 import dev.december.jeterbackend.stream.signaler.data.model.ClientModel
 import dev.december.jeterbackend.stream.signaler.data.model.RequestModel
 import dev.december.jeterbackend.stream.signaler.data.model.SupplierModel
+import dev.december.jeterbackend.stream.signaler.errors.*
 import dev.december.jeterbackend.stream.signaler.presentation.dto.impl.toData
 import dev.december.jeterbackend.stream.signaler.presentation.dto.Negotiation
 import dev.december.jeterbackend.stream.signaler.presentation.dto.PeerInfo
@@ -90,11 +91,11 @@ class PeerServiceImpl(
             val appointmentId = param.data.appointmentId
             val appointmentEntity =
                 tourRepository.findByIdOrNull(appointmentId) ?: return Data.Error(AppointmentNotFoundFailure())
-            if (appointmentEntity.tourStatus == TourStatus.COMPLETED) {
+            if (appointmentEntity.appointmentStatus == AppointmentStatus.COMPLETED) {
                 return Data.Error(AppointmentCompletedFailure())
             }
             if (appointmentEntity.reservationDate.isAfter(LocalDateTime.now().plusMinutes(10)) ||
-                appointmentEntity.tourStatus != TourStatus.CONFIRMED
+                appointmentEntity.appointmentStatus != AppointmentStatus.CONFIRMED
             ) {
                 return Data.Error(AppointmentTooEarlyFailure())
             }
@@ -173,7 +174,7 @@ class PeerServiceImpl(
             sendRequest(appointment.supplier.session, RequestType.LEAVE)
             sendRequest(appointment.client.session, RequestType.LEAVE)
             tourRepository.findByIdOrNull(appointmentId)?.run{
-                tourRepository.save(copy(tourStatus = TourStatus.COMPLETED))
+                tourRepository.save(copy(appointmentStatus = AppointmentStatus.COMPLETED))
             }
         }
         return Data.Success(Unit)

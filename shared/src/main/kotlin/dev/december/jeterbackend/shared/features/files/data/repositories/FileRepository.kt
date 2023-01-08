@@ -13,10 +13,10 @@ import org.springframework.stereotype.Repository
 interface FileRepository : JpaRepository<FileEntity, String>,
     JpaSpecificationExecutor<FileEntity> {
 
-//    // too weak at jpql
-//    @Query(
-//        "select * from file where file.id in (select file_id from message_files where message_files.message_id in (select id from messages where messages.chat_id=:chatId))",
-//        nativeQuery=true,
-//    )
+    // too weak at jpql
+    @Query(
+        "select * from file where file.id in (select file_id from message_files where message_files.message_id in (select id from messages where messages.chat_id=:chatId))",
+        nativeQuery=true,
+    )
     fun getAllByChatId(chatId: String, pageable: Pageable): Page<FileEntity>
 }

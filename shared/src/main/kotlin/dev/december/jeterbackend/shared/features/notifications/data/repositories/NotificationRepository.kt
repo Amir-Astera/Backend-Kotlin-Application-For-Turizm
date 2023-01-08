@@ -9,8 +9,6 @@ import java.time.LocalDateTime
 
 @Repository
 interface NotificationRepository  : CrudRepository<NotificationEntity, String> {
-    fun deleteByUserAndAppointmentDatetimeAndRecipientType(appointmentDatetime: LocalDateTime, recipientType: PlatformRole)
-
     fun findByStatusAndRecipientTypeAndAppointmentDatetimeBetween(
         notificationStatus: NotificationStatus,
         recipientType: PlatformRole,

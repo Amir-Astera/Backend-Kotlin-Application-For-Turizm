@@ -21,9 +21,6 @@ data class NotificationEntity(
     @Id
     @Column(name = "id", nullable = false)
     val id: String = UUID.randomUUID().toString(),
-//    @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
-//    @JoinColumn(name = "user_id")
-//    val user: UserEntity,
     @Column(name = "senders_name", nullable = false)
     val sendersName: String,
     @Enumerated(EnumType.STRING)

@@ -125,7 +125,8 @@ class SupplierServiceImpl(
         schedule: SupplierSchedule?,
         price: SupplierPrice?,
         files: List<File>?,
-        registrationToken: String?
+        registrationToken: String?,
+        successOnExists: ((SupplierEntity) -> Boolean)?
     ): Data<String> {
         return try {
 //            if (!StringUtils.hasText(email) && !StringUtils.hasText(phone) || !email.contains("@") || !email.contains(".")) {
@@ -875,7 +876,7 @@ class SupplierServiceImpl(
         supplier: SupplierEntity,
         firstDayOfMonth: LocalDate,
     ): Failure? {
-        if (supplier.name == "" || supplier.surName == "" || supplier.patronymic == "") {
+        if (supplier.name == "" || supplier.surname == "" || supplier.patronymic == "") {
             return SupplierFullNameIsRequiredFailure()
         }
         if (supplier.education == null || supplier.education?.size == 0) {

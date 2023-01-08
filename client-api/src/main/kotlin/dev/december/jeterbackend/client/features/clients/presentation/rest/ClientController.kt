@@ -113,8 +113,7 @@ class ClientController(
 
     @GetMapping("/checkExistence")
     fun getByPhoneNumber(
-        @RequestParam(required = false)
-        phone: String,
+        @RequestParam(required = false) phone: String,
     ) : Mono<ResponseEntity<Any>>{
 
         return mono { getClientByPhoneNumberUseCase(GetClientByPhoneParams(phone)) }.map {

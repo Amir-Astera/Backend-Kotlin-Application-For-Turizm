@@ -1,6 +1,7 @@
 package dev.december.jeterbackend.shared.features.calendar.data.entities
 
 import com.vladmihalcea.hibernate.type.array.ListArrayType
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
 import java.time.LocalDate
@@ -26,9 +27,9 @@ data class CalendarEntity(
         columnDefinition = "date[]"
     )
     val workingDays: List<LocalDate>,
-//    @ManyToOne
-//    @JoinColumn(name="supplier_id", nullable=false)
-//    val supplier: SupplierEntity,
+    @ManyToOne
+    @JoinColumn(name="supplier_id", nullable=false)
+    val supplier: SupplierEntity,
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "updated_at", nullable = false)

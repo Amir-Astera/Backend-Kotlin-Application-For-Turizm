@@ -5,6 +5,8 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import dev.december.jeterbackend.client.core.config.security.SecurityProperties
+import dev.december.jeterbackend.client.features.analytics.domain.services.AnalyticsCounterService
+import dev.december.jeterbackend.client.features.authorization.data.entities.AuthFirebaseResponse
 import dev.december.jeterbackend.client.features.authorization.domain.services.FirebaseAuthService
 import dev.december.jeterbackend.client.features.authorization.domain.usecases.AuthParams
 import dev.december.jeterbackend.client.features.authorization.presentation.dto.AuthResponseDto
@@ -14,7 +16,12 @@ import dev.december.jeterbackend.client.features.authorization.domain.errors.Ref
 import dev.december.jeterbackend.client.features.authorization.domain.errors.ResetPasswordEmailFailure
 import dev.december.jeterbackend.client.features.authorization.domain.errors.ResetPasswordFailure
 import dev.december.jeterbackend.client.features.authorization.domain.errors.SupplierAuthFailure
+import dev.december.jeterbackend.client.features.authorization.presentation.dto.AuthRequestDto
+import dev.december.jeterbackend.client.features.clients.domain.errors.ClientDisabledFailure
+import dev.december.jeterbackend.client.features.clients.domain.errors.ClientNotFoundFailure
+import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.domain.model.OsType
+import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.springframework.http.HttpStatus
@@ -29,61 +36,61 @@ import java.util.*
 class FirebaseAuthServiceImpl(
     webClientBuilder: WebClient.Builder,
     private val securityProperties: SecurityProperties,
-//    private val analyticsCounterService: AnalyticsCounterService,
     private val firebaseAuth: FirebaseAuth,
-    private val dispatcher: CoroutineDispatcher
+    private val dispatcher: CoroutineDispatcher,
+    private val analyticsCounterService: AnalyticsCounterService,
+    private val clientRepository: ClientRepository
 ) : FirebaseAuthService {
     private val webClient = webClientBuilder.build()
 
     override suspend fun auth(email: String, password: String, osType: OsType): Data<AuthResponseDto> {
         return try {
-//            val client = clientRepository.findByEmail(email)
-//                ?: return Data.Error(ClientNotFoundFailure())
-//
-//            if (client.enableStatus != AccountEnableStatus.ENABLED) {
-//                return Data.Error(ClientDisabledFailure(isDisabled = true))
-//            }
-//
-//            val firebaseProps = securityProperties.firebaseProps
-//            val baseUrl = firebaseProps.apiIdentityUrl
-//            val url = "${baseUrl}:signInWithPassword?key=${firebaseProps.apiKey}"
-//
-//            val requestData = AuthRequestDto(
-//                email = email,
-//                password = password,
-//                returnSecureToken = true
-//            )
-//            val response = webClient.post()
-//                .uri(url)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(requestData)
-//                .awaitExchange { it.awaitEntity<AuthFirebaseResponse>() }
-//            val responseData = response.body
-//
-//            if (response.statusCode != HttpStatus.OK || responseData == null) {
-//                throw FirebaseAuthException(FirebaseException(
-//                    ErrorCode.UNAVAILABLE,
-//                    "Authorization failed!",
-//                    Throwable()
-//                ))
-//            }
-//
-//            analyticsCounterService.countLogin()
-//            if (client.osType != osType){
-//                clientRepository.save(client.copy(osType = osType))
-//            }
+            val client = clientRepository.findByEmail(email)
+                ?: return Data.Error(ClientNotFoundFailure())
 
-//            val authResponseDto = AuthResponseDto(
-//                tokenType = "Bearer",
-//                accessToken = responseData.idToken,
-//                refreshToken = responseData.refreshToken,
-//                expiresIn = responseData.expiresIn
-//            )
-            val temp = AuthResponseDto("", "", "", "")
+            if (client.enableStatus != AccountEnableStatus.ENABLED) {
+                return Data.Error(ClientDisabledFailure(isDisabled = true))
+            }
 
-            Data.Success(temp)
+            val firebaseProps = securityProperties.firebaseProps
+            val baseUrl = firebaseProps.apiIdentityUrl
+            val url = "${baseUrl}:signInWithPassword?key=${firebaseProps.apiKey}"
 
+            val requestData = AuthRequestDto(
+                email = email,
+                password = password,
+                returnSecureToken = true
+            )
+            val response = webClient.post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestData)
+                .awaitExchange { it.awaitEntity<AuthFirebaseResponse>() }
+            val responseData = response.body
+
+            if (response.statusCode != HttpStatus.OK || responseData == null) {
+                throw FirebaseAuthException(FirebaseException(
+                    ErrorCode.UNAVAILABLE,
+                    "Authorization failed!",
+                    Throwable()
+                ))
+            }
+
+            analyticsCounterService.countLogin()
+            if (client.osType != osType){
+                clientRepository.save(client.copy(osType = osType))
+            }
+
+            val authResponseDto = AuthResponseDto(
+                tokenType = "Bearer",
+                accessToken = responseData.idToken,
+                refreshToken = responseData.refreshToken,
+                expiresIn = responseData.expiresIn
+            )
+
+            Data.Success(authResponseDto)
         } catch (e: Exception) {
+            println(e)
             Data.Error(SupplierAuthFailure())
         }
     }

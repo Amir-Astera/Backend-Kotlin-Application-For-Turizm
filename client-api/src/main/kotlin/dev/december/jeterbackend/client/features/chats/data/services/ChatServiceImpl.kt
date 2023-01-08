@@ -121,13 +121,13 @@ class ChatServiceImpl(
     override suspend fun archiveChat(chatId: String): Data<Unit> {
         return try {
             withContext(dispatcher) {
-//                val oldEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
-//                chatClientRepository.save(
-//                    oldEntity.copy(
-//                        archiveStatus = ChatArchiveStatus.ARCHIVED,
-//                        updatedAt = LocalDateTime.now()
-//                    )
-//                )
+                val oldEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
+                chatClientRepository.save(
+                    oldEntity.copy(
+                        archiveStatus = ChatArchiveStatus.ARCHIVED,
+                        updatedAt = LocalDateTime.now()
+                    )
+                )
                 Data.Success(Unit)
             }
         } catch(e: Exception) {
@@ -138,13 +138,13 @@ class ChatServiceImpl(
     override suspend fun unarchiveChat(chatId: String): Data<Unit> {
        return try {
             withContext(dispatcher) {
-//                val oldEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
-//                    chatClientRepository.save(
-//                        oldEntity.copy(
-//                            archiveStatus = ChatArchiveStatus.UNARCHIVED,
-//                            updatedAt = LocalDateTime.now()
-//                        )
-//                    )
+                val oldEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
+                    chatClientRepository.save(
+                        oldEntity.copy(
+                            archiveStatus = ChatArchiveStatus.UNARCHIVED,
+                            updatedAt = LocalDateTime.now()
+                        )
+                    )
                 Data.Success(Unit)
             }
        } catch (e: Exception) {
@@ -155,8 +155,8 @@ class ChatServiceImpl(
     override suspend fun deleteChat(chatId: String): Data<Unit> {
         return try {
             withContext(dispatcher) {
-//                val chatEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
-//                chatClientRepository.deleteById(chatEntity.id)
+                val chatEntity = chatClientRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
+                chatClientRepository.deleteById(chatEntity.id)
                 Data.Success(Unit)
             }
         } catch (e: Exception) {

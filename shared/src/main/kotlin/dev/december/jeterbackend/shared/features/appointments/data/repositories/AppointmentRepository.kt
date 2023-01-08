@@ -15,8 +15,8 @@ import java.time.LocalDateTime
 
 @Repository
 interface AppointmentRepository: PagingAndSortingRepository<AppointmentEntity, String>, JpaSpecificationExecutor<AppointmentEntity>, JpaRepository<AppointmentEntity, String> {
-    fun findByIdAndClientId(id: String, clientId: String): AppointmentEntity
-    fun findByIdAndSupplierId(id: String, supplierId: String): AppointmentEntity
+    fun findByIdAndClientId(id: String, clientId: String): AppointmentEntity?
+    fun findByIdAndSupplierId(id: String, supplierId: String): AppointmentEntity?
 
     fun findBySupplierIdAndAppointmentStatusInAndReservationDateBetween(
         supplierId: String,
