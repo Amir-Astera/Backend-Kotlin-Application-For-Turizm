@@ -27,8 +27,8 @@ class AppointmentController(
     private val completeAppointmentUseCase: CompleteAppointmentUseCase,
     private val cancelAppointmentUseCase: CancelAppointmentUseCase,
     private val getAppointmentUseCase: GetAppointmentUseCase,
-    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase,
-    private val getSupplierFreeTimeUseCase: GetSupplierFreeTimeUseCase,
+//    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase,
+//    private val getSupplierFreeTimeUseCase: GetSupplierFreeTimeUseCase,
     private val getNotConfirmedAppointmentListUseCase: GetNotConfirmedAppointmentListUseCase
 ) {
 
@@ -157,59 +157,59 @@ class AppointmentController(
         }
     }
 
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/suggest-another-time")
-    fun suggestAnotherTime(
-        @Parameter(hidden = true) request: ServerHttpRequest,
-        authentication: Authentication,
-        @PathVariable id: String,
-        @RequestParam
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        reservationDateTime: LocalDateTime
-    ): Mono<ResponseEntity<Any>> {
-
-        val user = authentication.principal as SessionUser
-        val userId = user.id
-
-        return mono { suggestAnotherTimeUseCase(
-            SuggestAnotherTimeParams(
-                userId, id, reservationDateTime
-            )
-        ) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
-
-    @SecurityRequirement(name = "security_auth")
-    @GetMapping("/get-free-hours")
-    fun getFreeTime(
-        @Parameter(hidden = true) request: ServerHttpRequest,
-        authentication: Authentication,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") date: LocalDate
-    ): Mono<ResponseEntity<Any>> {
-        val user = authentication.principal as SessionUser
-        val userId = user.id
-
-        return mono { getSupplierFreeTimeUseCase(
-            GetSupplierFreeTimeParams(userId, date)
-        ) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().body(it.data)
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/suggest-another-time")
+//    fun suggestAnotherTime(
+//        @Parameter(hidden = true) request: ServerHttpRequest,
+//        authentication: Authentication,
+//        @PathVariable id: String,
+//        @RequestParam
+//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//        reservationDateTime: LocalDateTime
+//    ): Mono<ResponseEntity<Any>> {
+//
+//        val user = authentication.principal as SessionUser
+//        val userId = user.id
+//
+//        return mono { suggestAnotherTimeUseCase(
+//            SuggestAnotherTimeParams(
+//                userId, id, reservationDateTime
+//            )
+//        ) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
+//
+//    @SecurityRequirement(name = "security_auth")
+//    @GetMapping("/get-free-hours")
+//    fun getFreeTime(
+//        @Parameter(hidden = true) request: ServerHttpRequest,
+//        authentication: Authentication,
+//        @DateTimeFormat(pattern = "yyyy-MM-dd") date: LocalDate
+//    ): Mono<ResponseEntity<Any>> {
+//        val user = authentication.principal as SessionUser
+//        val userId = user.id
+//
+//        return mono { getSupplierFreeTimeUseCase(
+//            GetSupplierFreeTimeParams(userId, date)
+//        ) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().body(it.data)
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
 
     @SecurityRequirement(name = "security_auth")
     @GetMapping("/not-confirmed")

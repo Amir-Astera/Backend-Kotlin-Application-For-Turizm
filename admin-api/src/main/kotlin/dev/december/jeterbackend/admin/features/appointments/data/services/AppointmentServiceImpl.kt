@@ -45,6 +45,11 @@ class AppointmentServiceImpl(
                         ?: return@withContext Data.Error(AppointmentNotFoundFailure())
                 }
 
+                if (appointmentEntity == null) {
+                    return@withContext Data.Error(AppointmentGetFailure())
+                }
+
+
                 Data.Success(appointmentEntity.appointment())
             }
         } catch (e: Exception) {

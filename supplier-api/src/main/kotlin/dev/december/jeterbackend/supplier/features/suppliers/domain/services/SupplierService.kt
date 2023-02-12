@@ -1,6 +1,7 @@
 package dev.december.jeterbackend.supplier.features.suppliers.domain.services
 
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
+import dev.december.jeterbackend.shared.core.domain.model.Language
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.calendar.domain.models.Calendar
 import dev.december.jeterbackend.shared.features.files.domain.models.File
@@ -10,8 +11,7 @@ import dev.december.jeterbackend.shared.features.tours.domain.models.SupplierPri
 import java.time.LocalDate
 
 interface SupplierService {
-    suspend fun get(userId: String): Data<String>//<Supplier>
-    suspend fun getById(supplierId: String): Data<String>//<Supplier>
+    suspend fun get(userId: String): Data<Supplier>
     suspend fun updateSchedule( userId: String, schedule: SupplierSchedule): Data<String>
 
     suspend fun addEducation(userId: String, education: SupplierEducation): Data<String>
@@ -28,7 +28,6 @@ interface SupplierService {
     suspend fun updatePrice(userId: String, price: SupplierPrice): Data<String>
     suspend fun restore(id: String, signInProvider: String?): Data<Unit>
     suspend fun deleteByUserId(id: String, signInProvider: String?): Data<Unit>
-    suspend fun disableRoleSupplier(userId: String)
     suspend fun createSupplier(
         email: String,
         phone: String,
@@ -43,10 +42,9 @@ interface SupplierService {
         price: SupplierPrice?,
         files: List<File>?,
         registrationToken: String?,
-        successOnExists: ((SupplierEntity) -> Boolean)? = null,
     ): Data<String>
 
-    suspend fun getCalendar(userId: String, firstDayOfMonth: LocalDate,): Data<String>//<Calendar>
+    suspend fun getCalendar(userId: String, firstDayOfMonth: LocalDate,): Data<Calendar>
     suspend fun updateCalendar(userId: String, firstDayOfMonth: LocalDate, workingDays: Set<LocalDate>,): Data<Unit>
 
     suspend fun updateSocialMedia( userId: String, socialMedia: SupplierSocialMedia): Data<String>
@@ -60,7 +58,10 @@ interface SupplierService {
 
     suspend fun resetActivityStatus(): Data<Unit>
 
-    suspend fun updateExperience(userId: String, experience: LocalDate?): Data<Unit>
+    suspend fun updateEmail(userId: String, email: String): Data<Unit>
+    suspend fun verifyEmail(userId: String): Data<Unit>
 
-    suspend fun addUserClaims(userId: String, claims: Map<String, Any>): Data<String>
+    suspend fun updateLanguage(userId: String, language: Language): Data<Unit>
+
+    suspend fun updateExperience(userId: String, experience: LocalDate?): Data<Unit>
 }

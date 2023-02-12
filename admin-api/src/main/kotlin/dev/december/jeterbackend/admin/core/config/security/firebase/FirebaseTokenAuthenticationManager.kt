@@ -1,8 +1,8 @@
 package dev.december.jeterbackend.admin.core.config.security.firebase
 
 import com.google.firebase.auth.FirebaseAuth
-import dev.december.jeterbackend.admin.features.authorization.domain.usecaces.SaveSessionUserUseCase
-import dev.december.jeterbackend.admin.features.authorization.domain.usecaces.SessionParams
+import dev.december.jeterbackend.admin.features.appointments.authorization.domain.usecaces.SaveSessionUserUseCase
+import dev.december.jeterbackend.admin.features.appointments.authorization.domain.usecaces.SessionParams
 import dev.december.jeterbackend.shared.core.results.Data
 import kotlinx.coroutines.reactor.mono
 import org.springframework.security.authentication.BadCredentialsException

@@ -20,5 +20,5 @@ class PatchClientUseCase(
 
 data class PatchClientParams(
     val userId: String,
-    val updateClientData: UpdateClientData?,
+    val updateClientData: UpdateClientData,
 )

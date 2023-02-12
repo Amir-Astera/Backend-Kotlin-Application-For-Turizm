@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component
 @Component
 class GetChatMediaFilesUseCase(
     private val chatService: ChatService
-): UseCase<GetChatMediaFilesParams, Unit> {//Page<File>
-    override suspend fun invoke(params: GetChatMediaFilesParams): Data<Unit> {//Page<File>
+): UseCase<GetChatMediaFilesParams, Page<File>> {
+    override suspend fun invoke(params: GetChatMediaFilesParams): Data<Page<File>> {
         return chatService.getAllMediaFiles(
             params.userId, params.chatId, params.page, params.size
         )

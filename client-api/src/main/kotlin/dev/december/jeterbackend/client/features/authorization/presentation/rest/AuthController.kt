@@ -23,10 +23,34 @@ import reactor.core.publisher.Mono
 class AuthController(
     private val authUseCase: AuthUseCase,
     private val authWithPhoneUseCase: AuthWithPhoneUseCase,
+    private val authCredentialsUseCase: AuthCredentialsUseCase,
     private val refreshTokenUseCase: RefreshTokenUseCase,
     private val resetPasswordUseCase: ResetPasswordUseCase,
-    private val resetPasswordEmailUseCase: ResetPasswordEmailUseCase
+    private val resetPasswordEmailUseCase: ResetPasswordEmailUseCase,
 ) {
+
+    @PostMapping("/authCredentials")
+    fun authCredentials(
+        @RequestHeader("Sec-CH-UA-Platform",required = false) osType: String?,
+        @Parameter(hidden = true)
+        request: ServerHttpRequest
+    ): Mono<ResponseEntity<Any>> {
+        val authorizationHeader = request.headers.getFirst(HttpHeaders.AUTHORIZATION) ?: ""
+        val encodedToken = authorizationHeader.split(' ').lastOrNull() ?: ""
+        return mono { authCredentialsUseCase(AuthParams(encodedToken, osType)) }.map {
+            when (it) {
+                is Data.Success -> {
+                    ResponseEntity
+                        .status(HttpStatus.OK)
+                        .cacheControl(CacheControl.noCache())
+                        .body(it.data)
+                }
+                is Data.Error -> {
+                    ResponseEntity.status(it.failure.code).body(it.failure)
+                }
+            }
+        }
+    }
     @PostMapping("/authEmail")
     fun create(
         @RequestHeader("Sec-CH-UA-Platform",required = false) osType: String?,

@@ -1,5 +1,6 @@
 package dev.december.jeterbackend.shared.features.payments.domain.models
 
+import dev.december.jeterbackend.shared.features.clients.domain.models.Client
 import org.springframework.data.domain.Page
 
 interface PaymentBySupplierInterface {
@@ -9,7 +10,7 @@ interface PaymentBySupplierInterface {
 }
 
 data class PaymentBySupplier(
-//    val client: Client,
+    val client: Client,
     val payment: Int,
     val sessionCount: Int
 )

@@ -26,11 +26,11 @@ import java.time.LocalDateTime
 @Tag(name = "tours", description = "The Tours API")
 class TourController(
     private val createTourUseCase: CreateTourUseCase,
-    private val getTourListUseCase: GetTourListUseCase,
+//    private val getTourListUseCase: GetTourListUseCase,
     private val deleteTourUseCase: DeleteTourUseCase,
-    private val confirmTourUseCase: ConfirmTourUseCase,
-    private val completeTourUseCase: CompleteTourUseCase,
-    private val cancelTourUseCase: CancelTourUseCase,
+//    private val confirmTourUseCase: ConfirmTourUseCase,
+//    private val completeTourUseCase: CompleteTourUseCase,
+//    private val cancelTourUseCase: CancelTourUseCase,
     private val getTourUseCase: GetTourUseCase,
 //    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase
 ) {
@@ -79,37 +79,37 @@ class TourController(
         }
     }
 
-    @SecurityRequirement(name = "security_auth")
-    @GetMapping
-    fun getAll(
-        @Parameter(hidden = true) authentication: Authentication,
-        @RequestParam(required = true)
-        statuses: Set<TourStatus>,
-        @RequestParam(required = true)
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        reservationDateFrom: LocalDateTime,
-        @RequestParam(required = true)
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        reservationDateTo: LocalDateTime,
-    ): Mono<ResponseEntity<Any>> {
-        return mono { getTourListUseCase(
-            GetToursParams(
-                (authentication.principal as SessionUser).id,
-                statuses,
-                reservationDateFrom,
-                reservationDateTo
-            )
-        ) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().body(it.data)
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
+//    @SecurityRequirement(name = "security_auth")
+//    @GetMapping
+//    fun getAll(
+//        @Parameter(hidden = true) authentication: Authentication,
+//        @RequestParam(required = true)
+//        statuses: Set<TourStatus>,
+//        @RequestParam(required = true)
+//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//        reservationDateFrom: LocalDateTime,
+//        @RequestParam(required = true)
+//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//        reservationDateTo: LocalDateTime,
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono { getTourListUseCase(
+//            GetToursParams(
+//                (authentication.principal as SessionUser).id,
+//                statuses,
+//                reservationDateFrom,
+//                reservationDateTo
+//            )
+//        ) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().body(it.data)
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
 
     @SecurityRequirement(name = "security_auth")
     @DeleteMapping("/{id}")
@@ -128,56 +128,56 @@ class TourController(
         }
     }
 
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/cancel")
-    fun cancel(
-        @PathVariable id: String
-    ): Mono<ResponseEntity<Any>> {
-        return mono { cancelTourUseCase(CancelTourParams(id)) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
-
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/complete")
-    fun complete(
-        @PathVariable id: String
-    ): Mono<ResponseEntity<Any>> {
-        return mono { completeTourUseCase(CompleteTourParams(id)) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
-
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/confirm")
-    fun confirm(
-        @PathVariable id: String
-    ): Mono<ResponseEntity<Any>> {
-        return mono { confirmTourUseCase(ConfirmTourParams(id)) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/cancel")
+//    fun cancel(
+//        @PathVariable id: String
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono { cancelTourUseCase(CancelTourParams(id)) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
+//
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/complete")
+//    fun complete(
+//        @PathVariable id: String
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono { completeTourUseCase(CompleteTourParams(id)) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
+//
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/confirm")
+//    fun confirm(
+//        @PathVariable id: String
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono { confirmTourUseCase(ConfirmTourParams(id)) }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
 //    @SecurityRequirement(name = "security_auth")
 //    @PutMapping("/{id}/suggest-another-time")
 //    fun suggestAnotherTime(

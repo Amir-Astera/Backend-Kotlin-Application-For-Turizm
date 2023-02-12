@@ -2,6 +2,7 @@ package dev.december.jeterbackend.client.features.clients.domain.services
 
 import dev.december.jeterbackend.client.features.clients.presentation.dto.UpdateClientData
 import dev.december.jeterbackend.shared.core.domain.model.Gender
+import dev.december.jeterbackend.shared.core.domain.model.Language
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
 import dev.december.jeterbackend.shared.features.clients.domain.models.Client
@@ -31,7 +32,7 @@ interface ClientService {
 
     suspend fun update(
         userId: String,
-        updateClientData: UpdateClientData?
+        updateClientData: UpdateClientData
     ): Data<String>
 
     suspend fun deleteByUserId(
@@ -60,4 +61,5 @@ interface ClientService {
     suspend fun updateRegistrationToken(userId: String, registrationToken: String): Data<Unit>
 
     suspend fun restore(id: String, signInProvider: String?): Data<Unit>
+    suspend fun updateLanguage(userId: String, language: Language): Data<Unit>
 }

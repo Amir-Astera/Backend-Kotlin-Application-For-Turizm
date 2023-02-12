@@ -7,16 +7,16 @@ import dev.december.jeterbackend.supplier.features.appointments.presentation.dto
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
-@Component
-class GetSupplierFreeTimeUseCase (
-    private val appointmentService: AppointmentService
-) : UseCase<GetSupplierFreeTimeParams, List<FreeTimeDto>> {
-    override suspend fun invoke(params: GetSupplierFreeTimeParams): Data<List<FreeTimeDto>> {
-        return appointmentService.getSupplierFreeTime(params.userId, params.date)
-    }
-}
-
-data class GetSupplierFreeTimeParams(
-    val userId: String,
-    val date: LocalDate
-)
+//@Component
+//class GetSupplierFreeTimeUseCase (
+//    private val appointmentService: AppointmentService
+//) : UseCase<GetSupplierFreeTimeParams, List<FreeTimeDto>> {
+//    override suspend fun invoke(params: GetSupplierFreeTimeParams): Data<List<FreeTimeDto>> {
+//        return appointmentService.getSupplierFreeTime(params.userId, params.date)
+//    }
+//}
+//
+//data class GetSupplierFreeTimeParams(
+//    val userId: String,
+//    val date: LocalDate
+//)

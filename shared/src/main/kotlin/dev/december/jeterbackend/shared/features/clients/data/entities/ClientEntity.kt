@@ -49,10 +49,17 @@ data class ClientEntity(
     val osType: OsType? = null,
     @Column(name="notify")
     val notify: Boolean = true,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "language")
+    val language: Language = Language.EN,
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "updated_at", nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "deleted_at", nullable = true)
+    val deletedAt: LocalDateTime? = null,
     @Column(name = "registration_token")
     val registrationToken: String? = null,
-)
+) {
+    fun isNotifiable() = this.notify && this.registrationToken != null
+}

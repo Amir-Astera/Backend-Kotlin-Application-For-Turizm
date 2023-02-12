@@ -2,6 +2,7 @@ package dev.december.jeterbackend.shared.features.admin.data.repositories.specif
 
 import dev.december.jeterbackend.shared.features.admin.data.entities.AdminEntity
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
+import dev.december.jeterbackend.shared.features.admin.data.entities.extensions.AdminAuthorityEntity
 import dev.december.jeterbackend.shared.features.admin.domain.models.AdminAuthorityCode
 import dev.december.jeterbackend.shared.features.authorities.data.entities.UserAuthorityEntity
 import dev.december.jeterbackend.shared.features.authorities.domain.models.AuthorityCode
@@ -16,16 +17,18 @@ import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus as
 @Component
 class AdminSpecification {
     companion object {
-        fun userJoinFilter(
-            authorityCodes: Set<AdminAuthorityCode>,
-        ): Specification<AdminEntity> {
-            return Specification<AdminEntity> { root, _, criteriaBuilder ->
-                val predicates = mutableListOf<Predicate>()
-                val userAuthorityJoin = root.join<AdminEntity, UserAuthorityEntity>("userAuthorities")
-                val convertedAuthorityCodes = authorityCodes.map { it.convertToAuthorityCode() }
-                predicates.add(userAuthorityJoin.get<AuthorityCode>("authority").`in`(convertedAuthorityCodes))
-                criteriaBuilder.and(*predicates.toTypedArray())
-            }
+        fun adminAuthorityJoinFilter(
+            authorityCodes: Set<AdminAuthorityCode>?,
+        ): Specification<AdminEntity>? {
+            return if (authorityCodes != null) {
+                Specification<AdminEntity> { root, _, criteriaBuilder ->
+                    val predicates = mutableListOf<Predicate>()
+                    val adminAuthorityJoin = root.join<AdminEntity, AdminAuthorityEntity>("adminAuthorities")
+                    val convertedAuthorityCodes = authorityCodes.map { it.convertToAuthorityCode() }
+                    predicates.add(adminAuthorityJoin.get<AuthorityCode>("authority").`in`(convertedAuthorityCodes))
+                    criteriaBuilder.and(*predicates.toTypedArray())
+                }
+            }  else null
         }
 
         fun containsFullName(fullName: String?): Specification<AdminEntity>? {

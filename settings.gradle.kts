@@ -1,2 +1,2 @@
 rootProject.name = "jeter-backend"
-include("shared", "supplier-api", "client-api", "admin-api", "stream")
+include("admin-api", "supplier-api", "shared", "client-api", "stream", "task-scheduler")

@@ -5,11 +5,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
-import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
+import dev.december.jeterbackend.stream.core.domain.model.PlatformRole
 import dev.december.jeterbackend.stream.signaler.config.properties.FirebaseGoogleCredentialsProperties
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Component
 import java.io.FileInputStream
 import java.io.IOException
@@ -22,11 +19,13 @@ class FirebaseConfig(
     init {
         initFor(FIREBASE_APP_SUPPLIER, googleCredentialsProperties.supplier)
         initFor(FIREBASE_APP_CLIENT, googleCredentialsProperties.client)
+        initFor(FIREBASE_APP_ADMIN, googleCredentialsProperties.admin)
     }
 
     companion object {
         const val FIREBASE_APP_SUPPLIER = "SUPPLIER"
         const val FIREBASE_APP_CLIENT = "CLIENT"
+        const val FIREBASE_APP_ADMIN = "ADMIN"
     }
 
     @Throws(IOException::class)
@@ -42,6 +41,7 @@ class FirebaseConfig(
         return when(role) {
             PlatformRole.SUPPLIER -> FIREBASE_APP_SUPPLIER
             PlatformRole.CLIENT -> FIREBASE_APP_CLIENT
+            PlatformRole.ADMIN -> FIREBASE_APP_ADMIN
         }
     }
 

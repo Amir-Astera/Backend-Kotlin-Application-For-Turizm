@@ -27,6 +27,7 @@ class ClientController(
     private val deleteClientByUserIdUseCase: DeleteClientByUserIdUseCase,
     private val getClientByPhoneNumberUseCase: GetClientByPhoneNumberUseCase,
     private val updateRegistrationTokenUseCase: UpdateRegistrationTokenUseCase,
+    private val updateLanguageUseCase: UpdateLanguageUseCase,
     private val restoreClientUseCase: RestoreClientUseCase
 ) {
 

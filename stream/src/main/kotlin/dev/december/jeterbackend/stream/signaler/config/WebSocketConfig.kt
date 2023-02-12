@@ -1,6 +1,6 @@
 package dev.december.jeterbackend.stream.signaler.config
 
-import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
+import dev.december.jeterbackend.stream.core.domain.model.PlatformRole
 import dev.december.jeterbackend.stream.signaler.presentation.handlers.SocketHandler
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.Message

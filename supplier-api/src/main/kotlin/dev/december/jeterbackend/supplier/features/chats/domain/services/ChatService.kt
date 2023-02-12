@@ -15,12 +15,12 @@ interface ChatService {
                        createdTo: LocalDateTime?,
                        status: ChatArchiveStatus?,
                        userId: String
-    ): Data<Unit>//Page<ChatMessage>
-//    suspend fun getById(chatId: String): Data<Chat>
-    suspend fun getClient(userId: String, clientId: String): Data<Unit>//Chat
+    ): Data<Page<ChatMessage>>
+    suspend fun getById(chatId: String): Data<Chat>
+    suspend fun getSupport(supplierId: String, page: Int, size: Int, searchField: String?): Data<Page<SupportMessage>>
     suspend fun archiveChat(chatId: String): Data<Unit>
     suspend fun unarchiveChat(chatId: String): Data<Unit>
     suspend fun deleteChat(chatId: String): Data<Unit>
-    suspend fun getAllMessages(chatId: String, page: Int, size: Int, searchField: String?): Data<Unit>//Page<Message>
-    suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Unit>//Page<File>
+    suspend fun getAllMessages(chatId: String, page: Int, size: Int, searchField: String?): Data<Page<Message>>
+    suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Page<File>>
 }

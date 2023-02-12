@@ -7,15 +7,15 @@ import org.springframework.stereotype.Component
 
 
 
-@Component
-class CompleteTourUseCase (
-    private val tourService: TourService
-) : UseCase<CompleteTourParams, String> {
-    override suspend fun invoke(params: CompleteTourParams): Data<String> {
-        return tourService.complete(params.id)
-    }
-}
-
-data class CompleteTourParams(
-    val id: String,
-)
+//@Component
+//class CompleteTourUseCase (
+//    private val tourService: TourService
+//) : UseCase<CompleteTourParams, String> {
+//    override suspend fun invoke(params: CompleteTourParams): Data<String> {
+//        return tourService.complete(params.id)
+//    }
+//}
+//
+//data class CompleteTourParams(
+//    val id: String,
+//)

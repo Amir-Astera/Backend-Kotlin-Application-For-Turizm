@@ -3,6 +3,7 @@ package dev.december.jeterbackend.supplier.features.tour.domain.usecases
 import dev.december.jeterbackend.supplier.features.tour.domain.services.TourService
 import dev.december.jeterbackend.shared.core.domain.usecases.UseCase
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentStatus
 import dev.december.jeterbackend.shared.features.tours.domain.models.Tour
 import dev.december.jeterbackend.shared.features.tours.domain.models.TourStatus
 import org.springframework.stereotype.Component
@@ -22,7 +23,7 @@ class GetTourListUseCase (
 
 data class GetToursParams(
     val id: String,
-    val statuses: Set<TourStatus>,
+    val statuses: Set<AppointmentStatus>,
     val reservationDateFrom: LocalDateTime,
     val reservationDateTo: LocalDateTime,
 )

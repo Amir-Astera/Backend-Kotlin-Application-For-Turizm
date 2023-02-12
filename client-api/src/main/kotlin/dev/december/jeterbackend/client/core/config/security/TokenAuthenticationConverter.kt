@@ -14,7 +14,7 @@ class TokenAuthenticationConverter : ServerAuthenticationConverter {
 
     companion object {
         private const val BEARER = "Bearer "
-        private val matchBearerLength = Predicate { authValue: String -> authValue.length > BEARER.length }
+        private val properBearer = Predicate { authValue: String -> authValue.length > BEARER.length && authValue.startsWith(BEARER) }
         private val isolateBearerValue = Function { authValue: String -> authValue.substring(BEARER.length) }
     }
 
@@ -22,7 +22,7 @@ class TokenAuthenticationConverter : ServerAuthenticationConverter {
         return Mono.justOrEmpty(exchange)
             .map(FirebaseSecurityUtils::getTokenFromRequest)
             .filter { obj -> Objects.nonNull(obj) }
-            .filter(matchBearerLength)
+            .filter(properBearer)
             .map(isolateBearerValue)
             .filter { token -> StringUtils.hasText(token) }
             .map(FirebaseSecurityUtils::getAuthentication)

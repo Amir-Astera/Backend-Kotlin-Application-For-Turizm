@@ -6,6 +6,7 @@ import dev.december.jeterbackend.admin.features.admin.presentation.dto.UpdateAdm
 import dev.december.jeterbackend.admin.features.admin.presentation.dto.UpdateAdminData
 import dev.december.jeterbackend.admin.features.admin.domain.usecases.*
 import dev.december.jeterbackend.admin.features.admin.presentation.dto.DeleteAdminListData
+import dev.december.jeterbackend.admin.features.clients.presentation.dto.DeleteClientListData
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
@@ -33,7 +34,7 @@ import java.time.LocalDateTime
 class AdminController(
     private val getAdminListUseCase: GetAdminListUseCase,
     private val createAdminUseCase: CreateAdminUseCase,
-    private val deleteAdminByUserIdUseCase: DeleteAdminByUserIdUseCase,
+    private val deleteAdminByIdUseCase: DeleteAdminByIdUseCase,
     private val deleteAdminUseCase: DeleteAdminUseCase,
     private val deleteByAdminIdsUseCase: DeleteByAdminIdsUseCase,
     private val patchAdminByUserIdUseCase: PatchAdminByUserIdUseCase,
@@ -42,7 +43,7 @@ class AdminController(
 ) {
 
     @SecurityRequirement(name = "security_auth")
-    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
+    //@PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping
     fun create(
         @RequestBody admin: CreateAdminData,
@@ -75,7 +76,7 @@ class AdminController(
         @RequestParam(required = false)
         searchField: String?,
         @RequestParam(required = false)
-        authorityCodes: Set<AdminAuthorityCode>,
+        authorityCodes: Set<AdminAuthorityCode>?,
         @RequestParam(required = false)
         activityStatuses: Set<AccountActivityStatus>?,
         @RequestParam(required = false)
@@ -142,7 +143,7 @@ class AdminController(
         val user = authentication.principal as SessionUser
         val adminId = user.adminId
 
-        return mono { deleteAdminByUserIdUseCase(DeleteAdminByUserIdParams(adminId)) }.map {
+        return mono { deleteAdminByIdUseCase(DeleteAdminByIdParams(adminId)) }.map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity.ok().body(it.data)
@@ -178,7 +179,7 @@ class AdminController(
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @DeleteMapping
     fun deleteList(
-        @RequestBody data: DeleteAdminListData,
+        @RequestBody data: DeleteClientListData,
         @Parameter(hidden = true) request: ServerHttpRequest,
         authentication: Authentication
     ) : Mono<ResponseEntity<Any>>{
@@ -198,14 +199,14 @@ class AdminController(
     @SecurityRequirement(name = "security_auth")
     @PatchMapping("/current")
     fun updateCurrent(
-        @RequestBody updateAdminByUserIdData: UpdateAdminByUserIdData,
+        @RequestBody updateAdminData: UpdateAdminData,
         @Parameter(hidden = true) request: ServerHttpRequest,
         authentication: Authentication
     ): Mono<ResponseEntity<Any>>{
         val user = authentication.principal as SessionUser
         val adminId = user.adminId
 
-        return mono { patchAdminByUserIdUseCase(PatchAdminByUserIdParams(adminId, updateAdminByUserIdData)) } .map {
+        return mono { patchAdminByUserIdUseCase(PatchAdminByUserIdParams(adminId, updateAdminData)) } .map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity.ok().body(it.data)
@@ -237,7 +238,4 @@ class AdminController(
             }
         }
     }
-
-
-
 }

@@ -109,13 +109,24 @@ data class SupplierEntity(
     val osType: OsType? = null,
     @Column(name="notify")
     val notify: Boolean = true,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "language")
+    val language: Language = Language.EN,
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "updated_at", nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "deleted_at", nullable = true)
+    val deletedAt: LocalDateTime? = null,
     @Column(name = "registration_token")
     val registrationToken: String? = null,
 ) {
+
+    fun getFullName() =
+        (surname ?: "") + " " + (name ?: "") + " " + (patronymic ?: "")
+
+    fun isNotifiable() = this.notify && this.registrationToken != null
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
@@ -128,6 +139,6 @@ data class SupplierEntity(
 
     @Override
     override fun toString(): String {
-        return this::class.simpleName + "(id = $id , email = $email , phone = $phone , name = $name , surname = $surname , patronymic = $patronymic , birthDate = $birthDate , socialMedias = $socialMedias , bankAccount = $bankAccount , avatar = $avatar , enableStatus = $enableStatus , activityStatus = $activityStatus , status = $status , description = $description , rating = $rating , feedbackCount = $feedbackCount , clientSize = $clientSize , sessionCount = $sessionCount , totalEarnings = $totalEarnings  , experience = $experience , about = $about , videoFileId = $videoFileId , timeZone = $timeZone , specializationId = $specializationId , chatPerHour = $chatPerHour , chatPerMinute = $chatPerMinute , audioPerHour = $audioPerHour , audioPerMinute = $audioPerMinute , videoPerHour = $videoPerHour , videoPerMinute = $videoPerMinute , schedule = $schedule , userGender = $userGender , file = $file , osType = $osType , notify = $notify , createdAt = $createdAt , updatedAt = $updatedAt , registrationToken = $registrationToken )"
+        return this::class.simpleName + "(id = $id , email = $email , phone = $phone , name = $name , surname = $surname , patronymic = $patronymic , birthDate = $birthDate , socialMedias = $socialMedias , bankAccount = $bankAccount , avatar = $avatar , enableStatus = $enableStatus , activityStatus = $activityStatus , status = $status , description = $description , rating = $rating , feedbackCount = $feedbackCount , clientSize = $clientSize , sessionCount = $sessionCount , totalEarnings = $totalEarnings , experience = $experience , about = $about , videoFileId = $videoFileId , timeZone = $timeZone , specializationId = $specializationId , chatPerHour = $chatPerHour , chatPerMinute = $chatPerMinute , audioPerHour = $audioPerHour , audioPerMinute = $audioPerMinute , videoPerHour = $videoPerHour , videoPerMinute = $videoPerMinute , schedule = $schedule , userGender = $userGender , file = $file , osType = $osType , notify = $notify , createdAt = $createdAt , updatedAt = $updatedAt , registrationToken = $registrationToken )"
     }
 }

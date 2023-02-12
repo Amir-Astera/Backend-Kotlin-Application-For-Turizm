@@ -35,3 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
+/data/
+*-firebase.json
+firebase.env
+*.txt
+*-remote.yml
+/local.env
+/remote.env
+/.jpb/
+/dbdata/
+/files

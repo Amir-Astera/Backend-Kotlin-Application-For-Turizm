@@ -1,0 +1,41 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: List
+items:
+{{- range $app := .Values.apps }}
+{{- with $ }}
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: {{ printf "%s-%s" .Release.Name $app.name}}
+      annotations:
+    {{- if .Values.service.annotations }}
+    {{ toYaml .Values.service.annotations | indent 4 }}
+    {{- end }}
+    {{- if .Values.prometheus.metrics }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ $app.internalPort }}"
+    {{- end }}
+      labels:
+        track: "{{ .Values.application.track }}"
+{{ include "sharedlabels" . | indent 8 }}
+    spec:
+      type: {{ .Values.service.type }}
+      ports:
+      - port: {{ $app.externalPort }}
+        targetPort: {{ $app.internalPort }}
+        protocol: TCP
+        name: "{{ $app.name }}"
+    {{- if eq .Values.service.type "NodePort" }}
+        nodePort: {{ .Values.service.nodePort }}
+    {{- end }}
+    {{- if .Values.service.extraPorts }}
+    {{ toYaml .Values.service.extraPorts | indent 2 }}
+    {{- end }}
+      selector:
+        app: {{ template "appname" . }}
+        tier: "{{ .Values.application.tier }}"
+        track: "{{ .Values.application.track }}"
+    {{- end }}
+    {{- end }}
+    {{- end -}}

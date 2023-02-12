@@ -6,15 +6,15 @@ import dev.december.jeterbackend.client.features.tour.domain.services.TourServic
 import org.springframework.stereotype.Component
 
 
-@Component
-class ConfirmTourUseCase (
-    private val tourService: TourService
-) : UseCase<ConfirmTourParams, String> {
-    override suspend fun invoke(params: ConfirmTourParams): Data<String> {
-        return tourService.confirm(params.id)
-    }
-}
-
-data class ConfirmTourParams(
-    val id: String
-)
+//@Component
+//class ConfirmTourUseCase (
+//    private val tourService: TourService
+//) : UseCase<ConfirmTourParams, String> {
+//    override suspend fun invoke(params: ConfirmTourParams): Data<String> {
+//        return tourService.confirm(params.id)
+//    }
+//}
+//
+//data class ConfirmTourParams(
+//    val id: String
+//)

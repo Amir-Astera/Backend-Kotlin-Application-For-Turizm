@@ -9,13 +9,13 @@ interface PaymentService {
     suspend fun create(name: String): Data<String>
     suspend fun getAll(id: String, page: Int, size: Int, createdFrom: LocalDateTime?,
                        createdTo: LocalDateTime?
-    ): Data<Unit>//PaymentList
+    ): Data<PaymentList>
 
     suspend fun getPaymentsHistoryByClients(id: String, page: Int, size: Int,
                                             createdFrom: LocalDateTime?, createdTo: LocalDateTime?
-    ): Data<Unit>//PaymentBySupplierList
+    ): Data<PaymentBySupplierList>
 
     suspend fun getPaymentsHistoryByClient(id: String, clientId: String, page: Int, size: Int,
                                            createdFrom: LocalDateTime?, createdTo: LocalDateTime?
-    ): Data<Unit>//PaymentList
+    ): Data<PaymentList>
 }

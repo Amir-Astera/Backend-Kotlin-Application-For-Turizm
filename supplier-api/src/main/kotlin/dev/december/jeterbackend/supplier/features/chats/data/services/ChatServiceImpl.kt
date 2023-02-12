@@ -1,26 +1,36 @@
 package dev.december.jeterbackend.supplier.features.chats.data.services
 
+import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
 import dev.december.jeterbackend.supplier.features.chats.domain.services.ChatService
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.core.utils.convert
+import dev.december.jeterbackend.shared.features.appointments.data.entities.AppointmentEntity
+import dev.december.jeterbackend.shared.features.appointments.data.repositories.AppointmentRepository
 import dev.december.jeterbackend.shared.features.chats.data.entities.ChatEntity
+import dev.december.jeterbackend.shared.features.chats.data.entities.ChatSupportEntity
 import dev.december.jeterbackend.shared.features.chats.data.entities.extensions.chat
 import dev.december.jeterbackend.shared.features.chats.data.entities.extensions.messages
+import dev.december.jeterbackend.shared.features.chats.data.entities.extensions.supportMessages
 import dev.december.jeterbackend.shared.features.chats.data.repositories.ChatRepository
+import dev.december.jeterbackend.shared.features.chats.data.repositories.ChatSupportRepository
 import dev.december.jeterbackend.shared.features.chats.data.repositories.MessageRepository
+import dev.december.jeterbackend.shared.features.chats.data.repositories.SupportMessageRepository
 import dev.december.jeterbackend.shared.features.chats.data.repositories.specifications.ChatSpecification
-import dev.december.jeterbackend.shared.features.chats.domain.models.ChatArchiveStatus
-import dev.december.jeterbackend.shared.features.chats.domain.models.ChatMessage
-import dev.december.jeterbackend.shared.features.chats.domain.models.ChatSupplier
-import dev.december.jeterbackend.shared.features.chats.domain.models.MessageSortField
+import dev.december.jeterbackend.shared.features.chats.data.repositories.specifications.ChatSupportSpecification
+import dev.december.jeterbackend.shared.features.chats.domain.models.*
 import dev.december.jeterbackend.shared.features.clients.data.entities.extensions.client
 import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
+import dev.december.jeterbackend.shared.features.files.data.entities.FileEntity
+import dev.december.jeterbackend.shared.features.files.data.repositories.FileRepository
+import dev.december.jeterbackend.shared.features.files.domain.models.File
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.extensions.supplier
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
 import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
 import dev.december.jeterbackend.shared.features.tours.data.repositories.TourRepository
+import dev.december.jeterbackend.supplier.features.appointments.domain.errors.AppointmentNotFoundFailure
 import dev.december.jeterbackend.supplier.features.chats.domain.errors.*
+import dev.december.jeterbackend.supplier.features.client.domain.errors.ClientNotFoundFailure
 import dev.december.jeterbackend.supplier.features.tour.domain.errors.TourNotFoundFailure
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -37,10 +47,13 @@ import java.time.LocalDateTime
 class ChatServiceImpl(
     private val dispatcher: CoroutineDispatcher,
     private val chatRepository: ChatRepository,
+    private val chatSupportRepository: ChatSupportRepository,
     private val clientRepository: ClientRepository,
     private val supplierRepository: SupplierRepository,
+    private val appointmentRepository: AppointmentRepository,
     private val messageRepository: MessageRepository,
-    private val tourRepository: TourRepository
+    private val supportMessageRepository: SupportMessageRepository,
+    private val fileRepository: FileRepository,
 ) : ChatService {
 
     override suspend fun getAll(
@@ -51,68 +64,68 @@ class ChatServiceImpl(
         createdTo: LocalDateTime?,
         status: ChatArchiveStatus?,
         userId: String
-    ): Data<Unit> {//Page<ChatMessage>
+    ): Data<Page<ChatMessage>> {
         return try {
             withContext(dispatcher) {
-//                val userEntity = userRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(UserNotFoundFailure())
-//                val supplier = userEntity.supplier ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val pageable = PageRequest.of(page, size)
-//                val specification = Specification.where(ChatSpecification.isArchived(status))
-//                    .and(ChatSpecification.containsClientFullName(searchField))
-//                    .and(ChatSpecification.isGreaterThanCreatedAt(createdFrom))
-//                    .and(ChatSpecification.isLessThanCreatedAt(createdTo))
-////                    .and(ChatSpecification.findAllBySupplierId(supplier))
-//                val chatsEntity = chatRepository.findAll(specification, pageable)
-//
-//                val chats = chatsEntity.map { chatEntity ->
-//                    chatEntity.convert<ChatEntity, ChatMessage>(mapOf(
-//                        "chatId" to chatEntity.id,
-//                        "client" to chatEntity.client.client(),
-//                        "supplier" to chatEntity.supplier.supplier(),
-//                        "lastMessage" to messageRepository.getByChatIdAndCreatedAt(chatEntity.id, chatEntity.updatedAt)?.messages()
-//                    ))
-//                }
-                Data.Success(Unit)//chats
+                val supplier = supplierRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(SupplierNotFoundFailure())
+                val pageable = PageRequest.of(page, size)
+                val specification = Specification.where(ChatSpecification.isArchived(status))
+                    .and(ChatSpecification.containsClientFullName(searchField))
+                    .and(ChatSpecification.isGreaterThanCreatedAt(createdFrom))
+                    .and(ChatSpecification.isLessThanCreatedAt(createdTo))
+                    .and(ChatSpecification.findAllBySupplierId(supplier))
+                val chatsEntity = chatRepository.findAll(specification, pageable)
+
+                val chats = chatsEntity.map { chatEntity ->
+                    chatEntity.convert<ChatEntity, ChatMessage>(mapOf(
+                        "chatId" to chatEntity.id,
+                        "client" to chatEntity.client.client(),
+                        "supplier" to chatEntity.supplier.supplier(),
+                        "lastMessage" to messageRepository.getByChatIdAndCreatedAt(chatEntity.id, chatEntity.updatedAt)?.messages()
+                    ))
+                }
+                Data.Success(chats)
             }
         } catch (e: Exception) {
             Data.Error(ChatGetAllFailure())
         }
     }
 
-//    override suspend fun getById(chatId: String): Data<Chat> {
-//        return try {
-//            withContext(dispatcher) {
-//                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
-//                val chat = chatEntity.chat()
-//                Data.Success(chat)
-//            }
-//        } catch (e: Exception) {
-//            Data.Error(ChatGetException())
-//        }
-//    }
-
-    override suspend fun getClient(userId: String, clientId: String): Data<Unit> {//Chat
+    override suspend fun getById(chatId: String): Data<Chat> {
         return try {
             withContext(dispatcher) {
-//                val userEntity = userRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(UserNotFoundFailure())
-//                val clientEntity = clientRepository.findByIdOrNull(clientId) ?: return@withContext Data.Error(ClientNotFoundFailure())
-//                val supplierEntity = userEntity.supplier ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//                val appointmentsEntity = tourRepository.findAllByClientIdAndSupplierId(clientEntity.id, supplierEntity.id)
-//                val chatEntity = chatRepository.findByClientIdAndSupplierId(clientEntity.id, supplierEntity.id)
-//
-//                val chat = if (chatEntity == null && appointmentsEntity.isNotEmpty()) {
-//                    chatRepository.save(
-//                        ChatEntity(
-//                            client = clientEntity,
-//                            supplier = supplierEntity,
-//                            archiveStatus = ChatArchiveStatus.UNARCHIVED
-//                        )
-//                    ).chat()
-//                } else chatEntity?.chat() ?: return@withContext Data.Error(TourNotFoundFailure())
-                Data.Success(Unit)//chat
+                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
+                val chat = chatEntity.chat()
+                Data.Success(chat)
             }
         } catch (e: Exception) {
+            Data.Error(ChatGetException())
+        }
+    }
+
+    override suspend fun getSupport(supplierId: String, page: Int, size: Int, searchField: String?): Data<Page<SupportMessage>> {
+        return try {
+            withContext(dispatcher) {
+                val supplierEntity = supplierRepository.findByIdOrNull(supplierId) ?: return@withContext Data.Error(SupplierNotFoundFailure())
+                val chatSupportEntity = chatSupportRepository.findBySupplierId(supplierEntity.id)
+
+                val chatEntity = chatSupportEntity
+                    ?: chatSupportRepository.save(
+                        ChatSupportEntity(
+                            supplier = supplierEntity,
+                            authority = PlatformRole.SUPPLIER
+                        )
+                    )
+                val sortParams = MessageSortField.CREATED_AT.getSortFields(SortDirection.DESC)
+                val pageable = PageRequest.of(page, size, sortParams)
+                val specification = Specification.where(ChatSupportSpecification.findAllByChatId(chatEntity)).and(
+                    ChatSupportSpecification.containsMessage(searchField))
+                val messageEntity = supportMessageRepository.findAll(specification, pageable)
+                val message = messageEntity.map { it.supportMessages() }
+                Data.Success(message)
+            }
+        } catch (e: Exception) {
+            println(e)
             Data.Error(ChatGetException())
         }
     }
@@ -168,39 +181,39 @@ class ChatServiceImpl(
         page: Int,
         size: Int,
         searchField: String?
-    ): Data<Unit> {//Page<Message>
+    ): Data<Page<Message>> {
         return try {
             withContext(dispatcher) {
-//                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
-//                chatRepository.save(chatEntity.copy(supplierUnreadMessagesCount = 0))
-//
-//                val sortParams = MessageSortField.CREATED_AT.getSortFields(SortDirection.DESC)
-//                val pageable = PageRequest.of(page, size, sortParams)
-//                val specification = Specification.where(ChatSpecification.findAllByChatId(chatEntity)).and(ChatSpecification.containsMessage(searchField))
-//                val messageEntities = messageRepository.findAll(specification, pageable)
-//                val messages = messageEntities.map { it.messages() }
-                Data.Success(Unit)//messages
+                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatGetFailure())
+                chatRepository.save(chatEntity.copy(supplierUnreadMessagesCount = 0))
+
+                val sortParams = MessageSortField.CREATED_AT.getSortFields(SortDirection.DESC)
+                val pageable = PageRequest.of(page, size, sortParams)
+                val specification = Specification.where(ChatSpecification.findAllByChatId(chatEntity)).and(ChatSpecification.containsMessage(searchField))
+                val messageEntities = messageRepository.findAll(specification, pageable)
+                val messages = messageEntities.map { it.messages() }
+                Data.Success(messages)
             }
         } catch (e: Exception) {
             Data.Error(ChatGetAllMessageException())
         }
     }
 
-    override suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Unit> {//Page<File>
+    override suspend fun getAllMediaFiles(userId: String, chatId: String, page: Int, size: Int): Data<Page<File>> {
         return try {
             withContext(dispatcher) {
-//                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
-//
-//                if (chatEntity.supplier.id != userId) {
-//                    return@withContext Data.Error(GetChatPermissionDenied())
-//                }
-//
-//                val sortParams = Sort.by("created_at").descending()
-//                val pageable = PageRequest.of(page, size, sortParams)
-//                val files = fileRepository.getAllByChatId(chatId, pageable).map {
-//                    it.convert<FileEntity, File>()
-//                }
-                Data.Success(Unit)//files
+                val chatEntity = chatRepository.findByIdOrNull(chatId) ?: return@withContext Data.Error(ChatDeleteFailure())
+
+                if (chatEntity.supplier.id != userId) {
+                    return@withContext Data.Error(GetChatPermissionDenied())
+                }
+
+                val sortParams = Sort.by("created_at").descending()
+                val pageable = PageRequest.of(page, size, sortParams)
+                val files = fileRepository.getAllByChatId(chatId, pageable).map {
+                    it.convert<FileEntity, File>()
+                }
+                Data.Success(files)
             }
         } catch (e: Exception) {
             Data.Error(ChatGetAllMediaFilesFailure())

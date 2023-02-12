@@ -18,6 +18,9 @@ data class ChatSupportEntity(
     @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "client_id", referencedColumnName = "id")
     val client: ClientEntity? = null,
+    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "chat_id")
+    val messages: Set<MessageEntity> = emptySet(),
     @Enumerated(EnumType.STRING)
     @Column(name = "authority", nullable = false)
     val authority: PlatformRole,

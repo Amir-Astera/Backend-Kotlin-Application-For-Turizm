@@ -9,4 +9,5 @@ import java.time.Duration
 data class FirebaseGoogleCredentialsProperties(
     val supplier: String,
     val client: String,
+    val admin: String
 )

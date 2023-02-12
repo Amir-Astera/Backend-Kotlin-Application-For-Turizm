@@ -9,6 +9,6 @@ data class UpdateClientData(
     val fullName: String?,
     val birthDate: LocalDate?,
     val gender: Gender?,
-//    val phone: String?,
-//    val email: String?
+    val phone: String?,
+    val email: String?
 )

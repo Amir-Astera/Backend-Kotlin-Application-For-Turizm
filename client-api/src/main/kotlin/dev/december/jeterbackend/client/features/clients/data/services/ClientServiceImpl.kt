@@ -4,13 +4,14 @@ import com.google.firebase.auth.AuthErrorCode
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.UserRecord
-import dev.december.jeterbackend.client.features.clients.domain.services.ClientService
 import dev.december.jeterbackend.client.features.analytics.domain.services.AnalyticsCounterService
 import dev.december.jeterbackend.client.features.clients.domain.errors.*
+import dev.december.jeterbackend.client.features.clients.domain.services.ClientService
 import dev.december.jeterbackend.client.features.clients.presentation.dto.UpdateClientData
 import dev.december.jeterbackend.client.features.files.domain.error.FileNotFoundFailure
 import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.domain.model.Gender
+import dev.december.jeterbackend.shared.core.domain.model.Language
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
 import dev.december.jeterbackend.shared.features.clients.data.entities.extensions.client
@@ -26,7 +27,7 @@ import dev.december.jeterbackend.shared.features.suppliers.data.repositories.spe
 import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
 import dev.december.jeterbackend.shared.features.suppliers.domain.models.Supplier
 import dev.december.jeterbackend.shared.features.user.domain.errors.UserEmailAlreadyExistsFailure
-import dev.december.jeterbackend.shared.features.user.domain.errors.UserNotFoundFailure
+import dev.december.jeterbackend.shared.features.user.domain.errors.UserInvalidIdentityFailure
 import dev.december.jeterbackend.shared.features.user.domain.errors.UserPhoneAlreadyExistsFailure
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -35,8 +36,11 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.util.StringUtils
+import java.io.FileInputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
+
 
 @Service
 class ClientServiceImpl(
@@ -46,7 +50,7 @@ class ClientServiceImpl(
     private val supplierRepository: SupplierRepository,
     private val favoriteSupplierRepository: FavoriteSupplierRepository,
     private val analyticsCounterService: AnalyticsCounterService,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
 ) : ClientService {
 
     override suspend fun create(
@@ -58,7 +62,7 @@ class ClientServiceImpl(
         gender: Gender?,
         avatar: File?,
         registrationToken: String?,
-        successOnExists: ((ClientEntity) -> Boolean)?
+        successOnExists: ((ClientEntity) -> Boolean)?,
     ): Data<String> {
         return try {
             withContext(dispatcher) {
@@ -139,7 +143,6 @@ class ClientServiceImpl(
     override suspend fun get(userId: String): Data<Client> {
         return try {
             withContext(dispatcher) {
-
                 val clientEntity = clientRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(ClientNotFoundFailure()
                 )
 
@@ -153,25 +156,41 @@ class ClientServiceImpl(
 
     override suspend fun update(
         userId: String,
-        updateClientData: UpdateClientData?
+        updateClientData: UpdateClientData,
     ): Data<String> {
         return try {
             withContext(dispatcher) {
                 val oldClientEntity = clientRepository.findByIdOrNull(userId)
                     ?: return@withContext Data.Error(ClientNotFoundFailure())
 
-                val avatarFile = if (updateClientData?.avatar != null) {
+                val avatarFile = if (updateClientData.avatar != null) {
                     fileRepository.findByIdOrNull(updateClientData.avatar.id) ?: return@withContext Data.Error(
                         FileNotFoundFailure()
                     )
                 } else null
 
+                if (updateClientData.email != null) {
+                    if (!StringUtils.hasText(updateClientData.email) || !updateClientData.email.contains("@") || !updateClientData.email.contains(".")) {
+                        return@withContext Data.Error(UserInvalidIdentityFailure())
+                    }
+                    if (clientRepository.existsByEmail(updateClientData.email)) return@withContext Data.Error(
+                        ClientEmailAlreadyExists(updateClientData.email))
+                    val request = UserRecord.UpdateRequest(firebaseAuth.getUser(oldClientEntity.id).uid).setEmail(updateClientData.email)
+                    try {
+                        firebaseAuth.updateUser(request)
+                    } catch (e: FirebaseAuthException) {
+                        when(e.authErrorCode) {
+                            AuthErrorCode.EMAIL_ALREADY_EXISTS -> return@withContext Data.Error(ClientEmailAlreadyExistsFirebase(updateClientData.email))
+                            else -> throw e
+                        }
+                    }
+                }
 
                 val newClientEntity = oldClientEntity.copy(
-                    id = oldClientEntity.id,
-                    fullName = updateClientData?.fullName ?: oldClientEntity.fullName,
-                    birthDate = updateClientData?.birthDate ?: oldClientEntity.birthDate,
-                    userGender = updateClientData?.gender ?: oldClientEntity.userGender,
+                    email = updateClientData.email ?: oldClientEntity.email,
+                    fullName = updateClientData.fullName ?: oldClientEntity.fullName,
+                    birthDate = updateClientData.birthDate ?: oldClientEntity.birthDate,
+                    userGender = updateClientData.gender ?: oldClientEntity.userGender,
                     avatar = avatarFile ?: oldClientEntity.avatar,
                     updatedAt = LocalDateTime.now()
                 )
@@ -229,7 +248,7 @@ class ClientServiceImpl(
             withContext(dispatcher) {
                 val clientEntity = clientRepository.findByIdOrNull(userId) ?: return@withContext Data.Error(ClientNotFoundFailure())
                 val clientId = clientEntity.id
-                val pageable = PageRequest.of(page, size,)
+                val pageable = PageRequest.of(page, size)
                 val specifications =
                     Specification.where(FavoriteSupplierSpecification.clientJoinFilter(clientId))
                 .and(FavoriteSupplierSpecification.approvedFilter())
@@ -304,6 +323,25 @@ class ClientServiceImpl(
             }
         } catch(e: Exception) {
             Data.Error(ClientRestoreFailure())
+        }
+    }
+
+    override suspend fun updateLanguage(userId: String, language: Language): Data<Unit> {
+        return try {
+            withContext(dispatcher) {
+                val clientEntity = clientRepository.findByIdOrNull(userId)
+                    ?: return@withContext Data.Error(ClientNotFoundFailure())
+
+                clientRepository.save(
+                    clientEntity.copy(
+                        language = language
+                    )
+                )
+
+                Data.Success(Unit)
+            }
+        } catch (e: Exception) {
+            Data.Error(ClientUpdateLanguageFailure())
         }
     }
 }

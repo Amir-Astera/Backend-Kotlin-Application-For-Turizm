@@ -6,16 +6,16 @@ import dev.december.jeterbackend.shared.core.results.Data
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
-@Component
-class SuggestAnotherTimeUseCase (
-    private val appointmentService: AppointmentService
-) : UseCase<SuggestAnotherTimeParams, String> {
-    override suspend fun invoke(params: SuggestAnotherTimeParams): Data<String> {
-        return appointmentService.suggestAnotherTime(params.id, params.reservationDateTime)
-    }
-}
-
-data class SuggestAnotherTimeParams(
-    val id: String,
-    val reservationDateTime: LocalDateTime
-)
+//@Component
+//class SuggestAnotherTimeUseCase (
+//    private val appointmentService: AppointmentService
+//) : UseCase<SuggestAnotherTimeParams, String> {
+//    override suspend fun invoke(params: SuggestAnotherTimeParams): Data<String> {
+//        return appointmentService.suggestAnotherTime(params.id, params.reservationDateTime)
+//    }
+//}
+//
+//data class SuggestAnotherTimeParams(
+//    val id: String,
+//    val reservationDateTime: LocalDateTime
+//)

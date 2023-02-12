@@ -55,6 +55,7 @@ logging:
 server:
   error:
     include-message: always
+  port: 8081
 file:
   storage:
     directory: ./files
@@ -94,10 +95,4 @@ security:
   allowed-public-apis:
     - /auth
     - /authPhone
-  allowed-post-public-apis:
-    - /api/orders/secure
-    - /api/clients
-    - /api/clients/restore
-    - /refreshToken
-    - /resetPassword
-    - /resetPasswordEmail
+    - /authCredentials

@@ -40,7 +40,7 @@ data class GetAdminListParams(
     val page: Int,
     val size: Int,
     val searchField: String?,
-    val authorityCodes: Set<AdminAuthorityCode>,
+    val authorityCodes: Set<AdminAuthorityCode>?,
     val activityStatuses: Set<AccountActivityStatus>?,
     val enableStatus: AccountEnableStatus?,
     val createdFrom: LocalDateTime?,

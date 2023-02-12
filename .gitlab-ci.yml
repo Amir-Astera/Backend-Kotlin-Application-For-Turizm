@@ -3,7 +3,7 @@ image: alpine:latest
 variables:
   DOCKER_DRIVER: overlay2
   ROLLOUT_RESOURCE_TYPE: deployment
-  DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+#  DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   K8S_SECRET_TZ: "Asia/Dhaka"
   K8S_SECRET_TERM: "xterm-256color"
@@ -32,13 +32,13 @@ admin-api-test:
     policy: pull-push
   artifacts:
     expose_as: "Admin Api Pipeline Data"
-    name: "$CI_COMMIT_REF_NAME-admin-api"
+#    name: "$CI_COMMIT_REF_NAME-admin-api"
     paths:
       - admin-api/build/reports/
       - admin-api/build/libs/admin-api.jar
   rules:
-    - if: $CI_COMMIT_BRANCH == "master"
-    - if: $CI_MERGE_REQUEST_ID
+#    - if: $CI_COMMIT_BRANCH == "master"
+#    - if: $CI_MERGE_REQUEST_ID
 
 client-api-test:
   stage: test
@@ -108,6 +108,30 @@ stream-test:
     paths:
       - stream/build/reports/
       - stream/build/libs/stream.jar
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+
+scheduler-test:
+  stage: test
+  image: openjdk:11.0.11-jdk-slim
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - cd task-scheduler
+    - ../gradlew clean bootJar
+  allow_failure: false
+  cache:
+    key: scheduler-cache
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+    policy: pull-push
+  artifacts:
+    expose_as: "Scheduler Pipeline Data"
+    name: "$CI_COMMIT_REF_NAME-scheduler"
+    paths:
+      - task-scheduler/build/reports/
+      - task-scheduler/build/libs/task-scheduler.jar
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
     - if: $CI_MERGE_REQUEST_ID
@@ -222,6 +246,34 @@ stream-build:
       --network host \
       --tag "$image_tagged" \
       --tag "$image_latest" stream/.
+    - docker push "$image_tagged"
+    - docker push "$image_latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+
+scheduler-build:
+  extends: .auto-deploy-values
+  dependencies:
+    - scheduler-test
+  stage: build
+  image: docker:19.03.11
+  services:
+    - docker:19.03.11-dind
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - image_tagged="$CI_APPLICATION_REPOSITORY-scheduler:$CI_APPLICATION_TAG"
+    - image_latest="$CI_APPLICATION_REPOSITORY-scheduler:latest"
+    - echo "$GOOGLE_APPLICATION_CREDENTIALS_FILE_CLIENT" > "task-scheduler/$GOOGLE_APPLICATION_CREDENTIALS_CLIENT"
+    - echo "$GOOGLE_APPLICATION_CREDENTIALS_FILE_SUPPLIER" > "task-scheduler/$GOOGLE_APPLICATION_CREDENTIALS_SUPPLIER"
+    - |
+      docker build \
+      --build-arg GOOGLE_APPLICATION_CREDENTIALS_CLIENT=$GOOGLE_APPLICATION_CREDENTIALS_CLIENT \
+      --build-arg GOOGLE_APPLICATION_CREDENTIALS_SUPPLIER=$GOOGLE_APPLICATION_CREDENTIALS_SUPPLIER \
+      --network host \
+      --tag "$image_tagged" \
+      --tag "$image_latest" task-scheduler/.
     - docker push "$image_tagged"
     - docker push "$image_latest"
   rules:

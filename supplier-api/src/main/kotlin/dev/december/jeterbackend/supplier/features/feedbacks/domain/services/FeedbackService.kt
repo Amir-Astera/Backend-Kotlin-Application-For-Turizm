@@ -2,6 +2,8 @@ package dev.december.jeterbackend.supplier.features.feedbacks.domain.services
 
 import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.feedbacks.domain.models.FeedbackSupplier
+import org.springframework.data.domain.Page
 import java.time.LocalDateTime
 
 interface FeedbackService {
@@ -27,6 +29,6 @@ interface FeedbackService {
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?,
-    ): Data<Unit>//Page<FeedbackSupplier>
+    ): Data<Page<FeedbackSupplier>>
 
 }

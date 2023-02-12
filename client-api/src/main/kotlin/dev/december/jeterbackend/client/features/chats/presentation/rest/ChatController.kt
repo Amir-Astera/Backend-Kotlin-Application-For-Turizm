@@ -23,7 +23,7 @@ import java.time.LocalDateTime
 class ChatController(
     private val getAllChatUseCase: GetAllChatUseCase,
     private val getChatUseCase: GetChatUseCase,
-    private val getSupplierUseCase: GetSupplierChatUseCase,
+    private val getSupportUseCase: GetSupportChatUseCase,
     private val archiveChatUseCase: ArchiveChatUseCase,
     private val unArchiveChatUseCase: UnArchiveChatUseCase,
     private val deleteChatUseCase: DeleteChatUseCase,
@@ -93,17 +93,24 @@ class ChatController(
     }
 
     @SecurityRequirement(name = "security_auth")
-    @GetMapping("/client/{supplierId}/supplier")
-    fun getSupplier(
-        @PathVariable supplierId: String,
+    @GetMapping("/support")
+    fun getSupport(
+        @RequestParam(required = false, defaultValue = "0")
+        page: Int,
+        @RequestParam(required = false, defaultValue = "10")
+        size: Int,
+        @RequestParam(required = false)
+        searchField: String?,
         @Parameter(hidden = true) authentication: Authentication
     ): Mono<ResponseEntity<Any>> {
         val user = authentication.principal as SessionUser
-        val userId = user.id
-        return mono { getSupplierUseCase(
-            GetSupplierChatParams(
-                userId,
-                supplierId
+        val clientId = user.id
+        return mono { getSupportUseCase(
+            GetSupportChatParams(
+                clientId,
+                page,
+                size,
+                searchField
             )
         ) }.map {
             when (it) {

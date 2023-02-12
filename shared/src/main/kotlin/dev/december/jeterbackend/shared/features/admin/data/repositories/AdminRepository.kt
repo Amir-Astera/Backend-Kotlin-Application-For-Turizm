@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface AdminRepository : JpaRepository<AdminEntity, String>, JpaSpecificationExecutor<AdminEntity> {
+    fun findByEmail(email: String): AdminEntity?
+    fun findByPhone(phone: String): AdminEntity?
 }

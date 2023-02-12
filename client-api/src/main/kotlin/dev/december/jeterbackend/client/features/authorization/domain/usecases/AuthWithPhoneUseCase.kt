@@ -7,6 +7,7 @@ import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.client.features.authorization.domain.errors.RefreshTokenFailure
 import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.client.features.authorization.domain.services.FirebaseAuthService
+import dev.december.jeterbackend.client.features.clients.domain.errors.ClientNotFoundInFirebaseFailure
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,7 +19,7 @@ class AuthWithPhoneUseCase (
         return try {
             val credentials = service.getCredentials(params)
             val phone = credentials.first()
-            val user = firebaseAuth.getUserByPhoneNumber(phone) //?: return Data.Error(SupplierNotFoundInFirebasePhoneFailure())
+            val user = firebaseAuth.getUserByPhoneNumber(phone) ?: return Data.Error(ClientNotFoundInFirebaseFailure())
             val email = user.email
             val password = credentials.last()
             val osType = OsType.UNKNOWN.get(params.osType)

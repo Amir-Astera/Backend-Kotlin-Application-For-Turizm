@@ -4,22 +4,36 @@ import com.google.firebase.ErrorCode
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.UserRecord
+import dev.december.jeterbackend.shared.core.domain.model.AccountEnableStatus
 import dev.december.jeterbackend.shared.core.domain.model.OsType
 import dev.december.jeterbackend.supplier.features.authorization.domain.services.FirebaseAuthService
 import dev.december.jeterbackend.supplier.features.authorization.domain.usecases.AuthParams
 import dev.december.jeterbackend.supplier.features.authorization.presentation.dto.AuthResponseDto
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
+import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
+import dev.december.jeterbackend.shared.features.user.domain.errors.UserInvalidIdentityFailure
 import dev.december.jeterbackend.supplier.core.config.security.SecurityProperties
+import dev.december.jeterbackend.supplier.features.analytics.domain.services.AnalyticsCounterService
+import dev.december.jeterbackend.supplier.features.authorization.data.entities.AuthFirebaseResponse
 import dev.december.jeterbackend.supplier.features.authorization.data.entities.RefreshTokenFirebaseResponse
+import dev.december.jeterbackend.supplier.features.authorization.data.entities.ResetPasswordEmailFirebaseResponse
 import dev.december.jeterbackend.supplier.features.authorization.domain.errors.RefreshTokenFailure
 import dev.december.jeterbackend.supplier.features.authorization.domain.errors.ResetPasswordEmailFailure
 import dev.december.jeterbackend.supplier.features.authorization.domain.errors.ResetPasswordFailure
 import dev.december.jeterbackend.supplier.features.authorization.domain.errors.SupplierAuthFailure
+import dev.december.jeterbackend.supplier.features.authorization.presentation.dto.AuthRequestDto
+import dev.december.jeterbackend.supplier.features.authorization.presentation.dto.ResetPasswordEmailRequestDto
+import dev.december.jeterbackend.supplier.features.suppliers.domain.errors.SupplierDisabledFailure
+import dev.december.jeterbackend.supplier.features.suppliers.domain.errors.SupplierOtpFailure
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.util.StringUtils
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitEntity
 import org.springframework.web.reactive.function.client.awaitExchange
@@ -28,58 +42,61 @@ import java.util.*
 @Service
 class FirebaseAuthServiceImpl(
     webClientBuilder: WebClient.Builder,
-    private val securityProperties: SecurityProperties,
-//    private val analyticsCounterService: AnalyticsCounterService,
     private val firebaseAuth: FirebaseAuth,
-    private val dispatcher: CoroutineDispatcher
+    private val dispatcher: CoroutineDispatcher,
+    private val securityProperties: SecurityProperties,
+    private val analyticsCounterService: AnalyticsCounterService,
+    private val supplierRepository: SupplierRepository
 ) : FirebaseAuthService {
     private val webClient = webClientBuilder.build()
 
     override suspend fun auth(email: String, password: String, osType: OsType): Data<AuthResponseDto> {
         return try {
-//            val supplier = supplierRepository.findByEmail(email)
-//                ?: return Data.Error(SupplierNotFoundFailure())
-//
-//            if (supplier.enableStatus != AccountEnableStatus.ENABLED) {
-//                return Data.Error(SupplierDisabledFailure(isDisabled = true))
-//            }
-//
-//            val firebaseProps = securityProperties.firebaseProps
-//            val baseUrl = firebaseProps.apiIdentityUrl
-//            val url = "${baseUrl}:signInWithPassword?key=${firebaseProps.apiKey}"
-//
-//            val requestData = AuthRequestDto(
-//                email = email,
-//                password = password,
-//                returnSecureToken = true
-//            )
-//            val response = webClient.post()
-//                .uri(url)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(requestData)
-//                .awaitExchange { it.awaitEntity<AuthFirebaseResponse>() }
-//            val responseData = response.body
-//
-//            if (response.statusCode != HttpStatus.OK || responseData == null) {
-//                throw FirebaseAuthException(FirebaseException(ErrorCode.UNAVAILABLE, "Authorization failed!", Throwable()))
-//            }
-//
-//            analyticsCounterService.countLogin()
-//            if (supplier.osType != osType) {
-//                supplierRepository.save(supplier.copy(osType = osType))
-//            }
-//
-//            val authResponseDto = AuthResponseDto(
-//                tokenType = "Bearer",
-//                accessToken = responseData.idToken,
-//                refreshToken = responseData.refreshToken,
-//                expiresIn = responseData.expiresIn
-//            )
-            val temp = AuthResponseDto("", "", "", "")
+            val supplier = supplierRepository.findByEmail(email)
+                ?: return Data.Error(SupplierNotFoundFailure())
 
-            Data.Success(temp)
+            if (supplier.enableStatus != AccountEnableStatus.ENABLED) {
+                return Data.Error(SupplierDisabledFailure(isDisabled = true))
+            }
 
+            val firebaseProps = securityProperties.firebaseProps
+            val baseUrl = firebaseProps.apiIdentityUrl
+            val url = "${baseUrl}:signInWithPassword?key=${firebaseProps.apiKey}"
+
+            val requestData = AuthRequestDto(
+                email = email,
+                password = password,
+                returnSecureToken = true
+            )
+            val response = webClient.post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestData)
+                .awaitExchange { it.awaitEntity<AuthFirebaseResponse>() }
+            val responseData = response.body
+
+            println(responseData)
+            println("-------------")
+            println(responseData?.idToken)
+            if (response.statusCode != HttpStatus.OK || responseData == null) {
+                throw FirebaseAuthException(FirebaseException(ErrorCode.UNAVAILABLE, "Authorization failed!", Throwable()))
+            }
+
+            analyticsCounterService.countLogin()
+            if (supplier.osType != osType) {
+                supplierRepository.save(supplier.copy(osType = osType))
+            }
+
+            val authResponseDto = AuthResponseDto(
+                tokenType = "Bearer",
+                accessToken = responseData.idToken,
+                refreshToken = responseData.refreshToken,
+                expiresIn = responseData.expiresIn
+            )
+
+            Data.Success(authResponseDto)
         } catch (e: Exception) {
+            println(e)
             Data.Error(SupplierAuthFailure())
         }
     }
@@ -125,15 +142,15 @@ class FirebaseAuthServiceImpl(
     override suspend fun resetPassword(id: String, newPassword: String, signInProvider: String?): Data<Unit> {
         return try{
             withContext(dispatcher) {
-//                if(signInProvider != "phone") {
-//                    return@withContext Data.Error(SupplierOtpFailure())
-//                }
-//
-//                (userRepository.findByIdOrNull(id) ?: return@withContext Data.Error(UserNotFoundFailure())).supplier
-//                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val request = UserRecord.UpdateRequest(firebaseAuth.getUser(id).uid).setPassword(newPassword)
-//                firebaseAuth.updateUser(request)
+                if(signInProvider != "phone") {
+                    return@withContext Data.Error(SupplierOtpFailure())
+                }
+
+                supplierRepository.findByIdOrNull(id)
+                    ?: return@withContext Data.Error(SupplierNotFoundFailure())
+
+                val request = UserRecord.UpdateRequest(firebaseAuth.getUser(id).uid).setPassword(newPassword)
+                firebaseAuth.updateUser(request)
 
                 Data.Success(Unit)
             }
@@ -144,29 +161,29 @@ class FirebaseAuthServiceImpl(
 
     override suspend fun resetPasswordEmail(email: String): Data<Unit> {
         return try{
-//            if (!StringUtils.hasText(email) || !email.contains("@") || !email.contains(".")) {
-//                return Data.Error(UserInvalidIdentityFailure())
-//            }
-//
-//            (userRepository.findByEmail(email) ?: return Data.Error(UserNotFoundFailure())).supplier
-//                ?: return Data.Error(SupplierNotFoundFailure())
-//
-//            val firebaseProps = securityProperties.firebaseProps
-//            val url = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${firebaseProps.apiKey}"
-//            val requestData = ResetPasswordEmailRequestDto(
-//                requestType = "PASSWORD_RESET",
-//                email = email
-//            )
-//            val response = webClient.post()
-//                .uri(url)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(requestData)
-//                .awaitExchange { it.awaitEntity<ResetPasswordEmailFirebaseResponse>() }
-//
-//            val responseData = response.body
-//            if (response.statusCode != HttpStatus.OK || responseData == null || responseData.email != email) {
-//                return Data.Error(ResetPasswordEmailFailure())
-//            }
+            if (!StringUtils.hasText(email) || !email.contains("@") || !email.contains(".")) {
+                return Data.Error(UserInvalidIdentityFailure())
+            }
+
+            supplierRepository.findByEmail(email)
+                ?: return Data.Error(SupplierNotFoundFailure())
+
+            val firebaseProps = securityProperties.firebaseProps
+            val url = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${firebaseProps.apiKey}"
+            val requestData = ResetPasswordEmailRequestDto(
+                requestType = "PASSWORD_RESET",
+                email = email
+            )
+            val response = webClient.post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestData)
+                .awaitExchange { it.awaitEntity<ResetPasswordEmailFirebaseResponse>() }
+
+            val responseData = response.body
+            if (response.statusCode != HttpStatus.OK || responseData == null || responseData.email != email) {
+                return Data.Error(ResetPasswordEmailFailure())
+            }
             Data.Success(Unit)
         } catch (e: Exception) {
             Data.Error(ResetPasswordEmailFailure())

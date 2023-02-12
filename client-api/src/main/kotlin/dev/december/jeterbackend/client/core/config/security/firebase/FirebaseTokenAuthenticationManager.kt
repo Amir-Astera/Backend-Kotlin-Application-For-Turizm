@@ -35,11 +35,11 @@ class FirebaseTokenAuthenticationManager(
             .map { u -> PreAuthenticatedAuthenticationToken(u, authentication.credentials, u.authorities) }
     }
 
-    private fun <T> raiseBadCredentials(): Mono<T>? {
+    private fun <T> raiseBadCredentials(): Mono<T> {
         return Mono.error(BadCredentialsException("Invalid Credentials"))
     }
 
-    private fun <T> raiseBadCredentials(e: Throwable): Mono<T>? {
+    private fun <T> raiseBadCredentials(e: Throwable): Mono<T> {
         return Mono.error(BadCredentialsException("Invalid Credentials", e))
     }
 

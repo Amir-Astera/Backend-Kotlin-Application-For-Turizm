@@ -30,7 +30,7 @@ class AppointmentController(
     private val completeAppointmentUseCase: CompleteAppointmentUseCase,
     private val cancelAppointmentUseCase: CancelAppointmentUseCase,
     private val getAppointmentUseCase: GetAppointmentUseCase,
-    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase
+//    private val suggestAnotherTimeUseCase: SuggestAnotherTimeUseCase
 ) {
 
     @SecurityRequirement(name = "security_auth")
@@ -176,29 +176,29 @@ class AppointmentController(
             }
         }
     }
-    @SecurityRequirement(name = "security_auth")
-    @PutMapping("/{id}/suggest-another-time")
-    fun suggestAnotherTime(
-        @PathVariable id: String,
-        @RequestParam
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        reservationDateTime: LocalDateTime
-    ): Mono<ResponseEntity<Any>> {
-        return mono {
-            suggestAnotherTimeUseCase(
-                SuggestAnotherTimeParams(
-                    id, reservationDateTime
-                )
-            )
-        }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().build()
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
+//    @SecurityRequirement(name = "security_auth")
+//    @PutMapping("/{id}/suggest-another-time")
+//    fun suggestAnotherTime(
+//        @PathVariable id: String,
+//        @RequestParam
+//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+//        reservationDateTime: LocalDateTime
+//    ): Mono<ResponseEntity<Any>> {
+//        return mono {
+//            suggestAnotherTimeUseCase(
+//                SuggestAnotherTimeParams(
+//                    id, reservationDateTime
+//                )
+//            )
+//        }.map {
+//            when (it) {
+//                is Data.Success -> {
+//                    ResponseEntity.ok().build()
+//                }
+//                is Data.Error -> {
+//                    ResponseEntity.status(it.failure.code).body(it.failure)
+//                }
+//            }
+//        }
+//    }
 }

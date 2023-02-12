@@ -11,7 +11,7 @@ class PatchAdminUseCase(
     private val adminService: AdminService
 ): UseCase<PatchAdminParams, String> {
     override suspend fun invoke(params: PatchAdminParams): Data<String> {
-        return adminService.update(
+        return adminService.updateById(
             params.id,
             params.updateAdminData
         )

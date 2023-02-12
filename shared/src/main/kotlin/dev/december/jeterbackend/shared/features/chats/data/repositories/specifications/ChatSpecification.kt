@@ -61,8 +61,8 @@ class ChatSpecification {
 
         fun findAllByClientId(client: ClientEntity): Specification<ChatEntity> {
             return Specification<ChatEntity> { root, _, criteriaBuilder ->
-                    val clientGet = root.get<ChatEntity>("client")
-                    criteriaBuilder.like(clientGet.get("id"), client.id)
+                val clientGet = root.get<ChatEntity>("client")
+                criteriaBuilder.like(clientGet.get("id"), client.id)
             }
         }
 

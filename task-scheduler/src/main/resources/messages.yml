@@ -1,0 +1,12 @@
+notifications:
+  soonAppointmentNotification:
+    type: 'APPOINTMENT_SOON'
+    en:
+      title: 'Appointment soon!'
+      body: 'Your appointment with {name} will start within 10 minutes'
+    ru:
+      title: 'Скоро встреча!'
+      body: 'Ваша встреча с {name} начнется в течение 10 минут'
+    kk:
+      title: 'Жақында кездесу!'
+      body: 'Сіздің {name} кездесуіңіз 10 минут ішінде басталады'

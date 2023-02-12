@@ -3,7 +3,7 @@ package dev.december.jeterbackend.admin.core.config.security
 import com.google.firebase.auth.FirebaseAuth
 import dev.december.jeterbackend.admin.core.config.security.firebase.FirebaseHeadersExchangeMatcher
 import dev.december.jeterbackend.admin.core.config.security.firebase.FirebaseTokenAuthenticationManager
-import dev.december.jeterbackend.admin.features.authorization.domain.usecaces.SaveSessionUserUseCase
+import dev.december.jeterbackend.admin.features.appointments.authorization.domain.usecaces.SaveSessionUserUseCase
 import org.springframework.boot.actuate.autoconfigure.security.reactive.EndpointRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

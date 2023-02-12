@@ -58,15 +58,6 @@ server:
 file:
   storage:
     directory: ./files
-task:
-  poolSize: 5
-  threadNamePrefix: "ThreadPoolTaskScheduler"
-  notificationTask:
-    timeBeforeAppointment: 10m
-    sendNotificationPeriod: 1m
-    clearNotificationPeriod: 1h
-  supplierTask:
-    resetActivityStatus: 0 0 0 1 * ?
 security:
   firebase-props:
     enable-strict-server-session: true

@@ -27,6 +27,7 @@ security:
     google-credentials:
       supplier: ${GOOGLE_APPLICATION_CREDENTIALS_SUPPLIER}
       client: ${GOOGLE_APPLICATION_CREDENTIALS_CLIENT}
+      admin: ${GOOGLE_APPLICATION_CREDENTIALS_ADMIN}
 management:
   endpoint.health.probes.enabled: true
   endpoint.loggers.enabled: true
@@ -37,16 +38,16 @@ management:
   endpoints:
     web:
       base-path: /stream/actuator
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
-    root: DEBUG
-    org.springframework.web: DEBUG
-    level.org.hibernate: DEBUG
-    org.springframework.boot.actuate.health: DEBUG
-    org.springframework.data.r2dbc: DEBUG
-  pattern.console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(%5p) %clr(:){faint} %replace(%m){\"password=.*, \", \"password=xxx, \"}%n%wEx"
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+#    root: DEBUG
+#    org.springframework.web: DEBUG
+#    level.org.hibernate: DEBUG
+#    org.springframework.boot.actuate.health: DEBUG
+#    org.springframework.data.r2dbc: DEBUG
+#  pattern.console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(%5p) %clr(:){faint} %replace(%m){\"password=.*, \", \"password=xxx, \"}%n%wEx"
 server:
   address: 0.0.0.0
   port: 8086

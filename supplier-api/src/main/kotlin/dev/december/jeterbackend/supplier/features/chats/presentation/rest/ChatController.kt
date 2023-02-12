@@ -1,6 +1,7 @@
 package dev.december.jeterbackend.supplier.features.chats.presentation.rest
 
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.chats.domain.models.ChatArchiveStatus
 import dev.december.jeterbackend.supplier.core.config.security.SessionUser
 import dev.december.jeterbackend.supplier.features.chats.domain.usecases.*
 import io.swagger.v3.oas.annotations.Parameter
@@ -20,10 +21,8 @@ import java.time.LocalDateTime
 @Tag(name = "chat", description = "The Chats API")
 class ChatController(
     private val getAllChatUseCase: GetAllChatUseCase,
-//    private val getChatUseCase: GetChatUseCase,
-    private val getClientChatUseCase: GetClientChatUseCase,
-    private val archivedChatsUseCase: GetArchivedChatsUseCase,
-    private val archivedChatUseCase: GetArchivedChatUseCase,
+    private val getChatUseCase: GetChatUseCase,
+    private val getSupportChatUseCase: GetSupportChatUseCase,
     private val archiveChatUseCase: ArchiveChatUseCase,
     private val unArchiveChatUseCase: UnArchiveChatUseCase,
     private val deleteChatUseCase: DeleteChatUseCase,
@@ -32,7 +31,7 @@ class ChatController(
 ) {
 
     @SecurityRequirement(name = "security_auth")
-    @GetMapping("/getAll")
+    @GetMapping
     fun getAll(
         @RequestParam(required = false, defaultValue = "0")
         page: Int,
@@ -46,10 +45,12 @@ class ChatController(
         @RequestParam(required = false)
         @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
         createdTo: LocalDateTime?,
+        @RequestParam(required = false)
+        status: ChatArchiveStatus?,
         @Parameter authentication: Authentication
-        ): Mono<ResponseEntity<Any>> {
-        val supplier = authentication.principal as SessionUser
-        val supplierId = supplier.id
+    ): Mono<ResponseEntity<Any>> {
+        val user = authentication.principal as SessionUser
+        val userId = user.id
         return mono { getAllChatUseCase(
             GetAllChatParams(
                 page,
@@ -57,9 +58,10 @@ class ChatController(
                 searchField,
                 createdFrom,
                 createdTo,
-                supplierId
+                status,
+                userId
             )
-         )
+        )
         }.map {
             when (it) {
                 is Data.Success ->{
@@ -72,32 +74,12 @@ class ChatController(
         }
     }
 
-//    @SecurityRequirement(name = "security_auth")
-//    @GetMapping("/get/{chatId}")
-//    fun get(
-//        @PathVariable chatId: String
-//    ): Mono<ResponseEntity<Any>> {
-//        return mono { getChatUseCase(GetChatParams(chatId)) }.map {
-//            when (it) {
-//                is Data.Success -> {
-//                    ResponseEntity.ok().body(it.data)
-//                }
-//                is Data.Error -> {
-//                    ResponseEntity.status(it.failure.code).body(it.failure)
-//                }
-//            }
-//        }
-//    }
-
     @SecurityRequirement(name = "security_auth")
-    @GetMapping("/supplier/{supplierId}/client")
-    fun getClient(
-        @PathVariable supplierId: String,
-        @Parameter(hidden = true) authentication: Authentication
+    @GetMapping("/get/{chatId}")
+    fun get(
+        @PathVariable chatId: String
     ): Mono<ResponseEntity<Any>> {
-        val client = authentication.principal as SessionUser
-        val clientId = client.id
-        return mono { getClientChatUseCase(GetClientChatParams(supplierId, clientId)) }.map {
+        return mono { getChatUseCase(GetChatParams(chatId)) }.map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity.ok().body(it.data)
@@ -110,34 +92,19 @@ class ChatController(
     }
 
     @SecurityRequirement(name = "security_auth")
-    @GetMapping("/archived_chats")
-    fun getArchivedChats(
+    @GetMapping("/support")
+    fun getSupport(
         @RequestParam(required = false, defaultValue = "0")
         page: Int,
         @RequestParam(required = false, defaultValue = "10")
         size: Int,
+        @RequestParam(required = false)
+        searchField: String?,
         @Parameter(hidden = true) authentication: Authentication
     ): Mono<ResponseEntity<Any>> {
-        val supplier = authentication.principal as SessionUser
-        val supplierId = supplier.id
-        return mono { archivedChatsUseCase(GetArchivedChatsParams(page, size, supplierId)) }.map {
-            when (it) {
-                is Data.Success -> {
-                    ResponseEntity.ok().body(it.data)
-                }
-                is Data.Error -> {
-                    ResponseEntity.status(it.failure.code).body(it.failure)
-                }
-            }
-        }
-    }
-
-    @SecurityRequirement(name = "security_auth")
-    @GetMapping("/archived_chat/{chatId}")
-    fun getArchivedChat(
-        @PathVariable chatId: String
-    ): Mono<ResponseEntity<Any>> {
-        return mono { archivedChatUseCase(GetArchivedChatParams(chatId)) }.map {
+        val user = authentication.principal as SessionUser
+        val supplierId = user.id
+        return mono { getSupportChatUseCase(GetSupportChatParams(supplierId, page, size, searchField)) }.map {
             when (it) {
                 is Data.Success -> {
                     ResponseEntity.ok().body(it.data)

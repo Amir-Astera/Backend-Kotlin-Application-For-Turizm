@@ -9,20 +9,10 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
-@Component
 class FirebaseTokenAuthenticationManager(
     private val auth: FirebaseAuth,
     private val saveSessionUserUseCase: SaveSessionUserUseCase,
 )  {
-
-    fun <T> raiseBadCredentials(): Mono<T>? {
-        return Mono.error(BadCredentialsException("Invalid Credentials"))
-    }
-
-    fun <T> raiseBadCredentials(e: Throwable): Mono<T>? {
-        return Mono.error(BadCredentialsException("Invalid Credentials", e))
-    }
-
     fun authenticateToken(token: String?): Mono<UserDetails> {
         if (token != null) {
             return auth

@@ -1,31 +1,22 @@
 package dev.december.jeterbackend.shared.features.notifications.data.entities
 
-import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
-import dev.december.jeterbackend.shared.features.notifications.data.entities.NotificationStatus
+import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
-
-//id          VARCHAR(50)  NOT NULL,
-//app_user_id     VARCHAR(255),
-//senders_name VARCHAR(255) NOT NULL,
-//recipient_type TEXT NOT NULL,
-//status TEXT NOT NULL,
-//appointment_datetime  TIMESTAMP WITHOUT TIME ZONE NOT NULL
-//created_at  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-//updated_at  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-//CONSTRAINT pk_notification PRIMARY KEY (id)
 
 @Entity(name = "notification")
 data class NotificationEntity(
     @Id
     @Column(name = "id", nullable = false)
     val id: String = UUID.randomUUID().toString(),
-    @Column(name = "senders_name", nullable = false)
-    val sendersName: String,
-    @Enumerated(EnumType.STRING)
-    @Column(name = "recipient_type", nullable = false)
-    val recipientType: PlatformRole,
+    @ManyToOne
+    @JoinColumn(name = "supplier_id", nullable = false)
+    val supplier: SupplierEntity,
+    @ManyToOne
+    @JoinColumn(name = "client_id", nullable = false)
+    val client: ClientEntity,
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     val status: NotificationStatus = NotificationStatus.NOT_SENT,

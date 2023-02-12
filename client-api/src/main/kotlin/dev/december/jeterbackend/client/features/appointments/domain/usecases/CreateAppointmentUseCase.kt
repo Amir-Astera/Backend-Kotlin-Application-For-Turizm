@@ -30,3 +30,15 @@ data class CreateAppointmentParams(
     val userId: String,
     val supplierId: String,
 )
+
+//return supplierService.getSupplierFreeTime(params.supplierId, params.reservationDate.toLocalDate()).fold {
+//            it.find { freeTimeDto -> freeTimeDto.startTime == params.reservationDate.toLocalTime() }
+//                ?: return@fold Data.Error(FreeTimeNotFoundFailure())
+//            appointmentService.create(
+//                params.reservationDate,
+//                params.communicationType,
+//                params.description,
+//                params.userId,
+//                params.supplierId,
+//            )
+//        }

@@ -15,4 +15,9 @@ interface FirebaseAuthService {
         signInProvider: String?
     ): Data<Unit>
     suspend fun resetPasswordEmail(email: String): Data<Unit>
+    suspend fun authCredentials(
+        providerId: String,
+        idToken: String,
+        osType: OsType
+    ): Data<AuthResponseDto>
 }

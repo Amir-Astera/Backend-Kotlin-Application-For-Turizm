@@ -3,15 +3,21 @@ package dev.december.jeterbackend.supplier.features.payments.data.services
 import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
 import dev.december.jeterbackend.shared.core.domain.model.SortDirection
 import dev.december.jeterbackend.shared.core.results.Data
+import dev.december.jeterbackend.shared.features.appointments.data.entities.extensions.payment
+import dev.december.jeterbackend.shared.features.appointments.data.repositories.AppointmentRepository
+import dev.december.jeterbackend.shared.features.appointments.data.repositories.specification.AppointmentSpecification
+import dev.december.jeterbackend.shared.features.appointments.domain.models.AppointmentSortField
 import dev.december.jeterbackend.shared.features.clients.data.entities.extensions.client
 import dev.december.jeterbackend.shared.features.clients.data.repositories.ClientRepository
 import dev.december.jeterbackend.shared.features.payments.domain.models.PaymentBySupplier
 import dev.december.jeterbackend.shared.features.payments.domain.models.PaymentBySupplierList
 import dev.december.jeterbackend.shared.features.payments.domain.models.PaymentList
 import dev.december.jeterbackend.shared.features.suppliers.data.repositories.SupplierRepository
+import dev.december.jeterbackend.shared.features.suppliers.domain.errors.SupplierNotFoundFailure
 import dev.december.jeterbackend.shared.features.tours.data.repositories.TourRepository
 import dev.december.jeterbackend.shared.features.tours.data.repositories.specification.TourSpecification
 import dev.december.jeterbackend.shared.features.tours.domain.models.TourSortField
+import dev.december.jeterbackend.supplier.features.client.domain.errors.ClientNotFoundFailure
 import dev.december.jeterbackend.supplier.features.payments.domain.errors.PaymentCreateFailure
 import dev.december.jeterbackend.supplier.features.payments.domain.errors.PaymentListNotFoundFailure
 import dev.december.jeterbackend.supplier.features.payments.domain.errors.PaymentNotFoundFailure
@@ -32,7 +38,8 @@ class PaymentServiceImpl(
     private val dispatcher: CoroutineDispatcher,
     private val supplierRepository: SupplierRepository,
     private val clientRepository: ClientRepository,
-    private val tourRepository: TourRepository
+    private val tourRepository: TourRepository,
+    private val appointmentRepository: AppointmentRepository
 ) : PaymentService {
 
     override suspend fun create(
@@ -53,52 +60,49 @@ class PaymentServiceImpl(
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?
-    ): Data<Unit> {//PaymentList
+    ): Data<PaymentList> {
         return try {
             withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                    return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val supplierId = user.supplier?.id ?:
-//                    return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val sortParams =
-//                    TourSortField.RESERVATION_DATE.getSortFields(SortDirection.DESC, PlatformRole.SUPPLIER )
-//
-//                val pageable = PageRequest.of(page, size, sortParams)
-//
-//                var specifications =
-//                    Specification.where(TourSpecification.supplierJoinFilter(supplierId))
-//                        .and(TourSpecification.paymentIsNotNull())
+                val supplierId = supplierRepository.findByIdOrNull(id)?.id ?:
+                return@withContext Data.Error(SupplierNotFoundFailure())
 
-//                if (createdFrom != null || createdTo != null) {
-//                    specifications = specifications.and(TourSpecification.isInPeriod(createdFrom, createdTo))
-//                }
-//
-//                val appointmentsEntity = tourRepository.findAll(specifications, pageable)
-//
-//                val payments = appointmentsEntity.map { it.payment() }
-//
-//                val totalPayments = if (page == 0) {
-//                    if (createdFrom != null && createdTo != null)
-//                        tourRepository.getTotalPaymentsInPeriod(supplierId, createdFrom, createdTo) ?: 0
-//                    else if (createdFrom != null)
-//                        tourRepository.getTotalPaymentsFromCreated(supplierId, createdFrom) ?: 0
-//                    else if (createdTo != null)
-//                        tourRepository.getTotalPaymentsToCreated(supplierId, createdTo) ?: 0
-//                    else
-//                        tourRepository.getTotalPayments(supplierId) ?: 0
-//                } else 0
-//
-//                val paymentList = PaymentList(
-//                    total = totalPayments,
-//                    payments = payments
-//                )
+                val sortParams =
+                    AppointmentSortField.RESERVATION_DATE.getSortFields(SortDirection.DESC, PlatformRole.SUPPLIER )
 
-                Data.Success(Unit)//paymentList
+                val pageable = PageRequest.of(page, size, sortParams)
+
+                var specifications =
+                    Specification.where(AppointmentSpecification.supplierJoinFilter(supplierId))
+                        .and(AppointmentSpecification.paymentIsNotNull())
+
+                if (createdFrom != null || createdTo != null) {
+                    specifications = specifications.and(AppointmentSpecification.isInPeriod(createdFrom, createdTo))
+                }
+
+                val appointmentsEntity = appointmentRepository.findAll(specifications, pageable)
+
+                val payments = appointmentsEntity.map { it.payment() }
+
+                val totalPayments = if (page == 0) {
+                    if (createdFrom != null && createdTo != null)
+                        appointmentRepository.getTotalPaymentsInPeriod(supplierId, createdFrom, createdTo) ?: 0
+                    else if (createdFrom != null)
+                        appointmentRepository.getTotalPaymentsFromCreated(supplierId, createdFrom) ?: 0
+                    else if (createdTo != null)
+                        appointmentRepository.getTotalPaymentsToCreated(supplierId, createdTo) ?: 0
+                    else
+                        appointmentRepository.getTotalPayments(supplierId) ?: 0
+                } else 0
+
+                val paymentList = PaymentList(
+                    total = totalPayments,
+                    payments = payments
+                )
+
+                Data.Success(paymentList)
             }
         } catch (e: Exception) {
-            Data.Error(PaymentListNotFoundFailure())
+            Data.Error((PaymentListNotFoundFailure()))
         }
     }
 
@@ -108,61 +112,58 @@ class PaymentServiceImpl(
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?
-    ): Data<Unit> {//PaymentBySupplierList
+    ): Data<PaymentBySupplierList> {
         return try {
             withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                    return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val supplierId = user.supplier?.id ?:
-//                    return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val pageable = PageRequest.of(page, size)
-//
-//                val entities =
-//                    if (createdFrom != null && createdTo != null)
-//                        tourRepository.getPaymentsAndGroupBySupplierIdInPeriod(supplierId, pageable, createdFrom, createdTo)
-//                    else if (createdFrom != null)
-//                        tourRepository.getPaymentsAndGroupBySupplierIdFromCreated(supplierId, pageable, createdFrom)
-//                    else if (createdTo != null)
-//                        tourRepository.getPaymentsAndGroupBySupplierIdToCreated(supplierId, pageable, createdTo)
-//                    else
-//                        tourRepository.getPaymentsAndGroupBySupplierId(supplierId, pageable)
-//
-//                val clientIds = entities.map { it.getClient() }
-//
-//                val clients = clientRepository.findAllById(clientIds).associateBy { it.id }
-//
-//                val totalPayments = if (page == 0) {
-//                    if (createdFrom != null && createdTo != null)
-//                        tourRepository.getTotalPaymentsInPeriod(supplierId, createdFrom, createdTo) ?: 0
-//                    else if (createdFrom != null)
-//                        tourRepository.getTotalPaymentsFromCreated(supplierId, createdFrom) ?: 0
-//                    else if (createdTo != null)
-//                        tourRepository.getTotalPaymentsToCreated(supplierId, createdTo) ?: 0
-//                    else
-//                        tourRepository.getTotalPayments(supplierId) ?: 0
-//                } else 0
-//
-//                val paymentsMap = mutableMapOf<String, PaymentBySupplier>()
-//
-//                for(payment in entities) {
-//                    paymentsMap[payment.getClient()] = PaymentBySupplier(
-//                        clients[payment.getClient()]?.client() ?: return@withContext Data.Error(ClientNotFoundFailure()),
-//                        payment.getPayment() ?: return@withContext Data.Error(PaymentNotFoundFailure()),
-//                        payment.getSessionCount()  ?: return@withContext Data.Error(SessionNotFoundFailure()),
-//                    )
-//                }
-//
-//                val payments = PaymentBySupplierList(
-//                    total = totalPayments,
-//                    payments = entities.map {
-//                        paymentsMap[it.getClient()]
-//                    }
-//                )
-//
+                val supplierId = supplierRepository.findByIdOrNull(id)?.id ?:
+                return@withContext Data.Error(SupplierNotFoundFailure())
 
-                Data.Success(Unit)//payments
+                val pageable = PageRequest.of(page, size)
+
+                val entities =
+                    if (createdFrom != null && createdTo != null)
+                        appointmentRepository.getPaymentsAndGroupBySupplierIdInPeriod(supplierId, pageable, createdFrom, createdTo)
+                    else if (createdFrom != null)
+                        appointmentRepository.getPaymentsAndGroupBySupplierIdFromCreated(supplierId, pageable, createdFrom)
+                    else if (createdTo != null)
+                        appointmentRepository.getPaymentsAndGroupBySupplierIdToCreated(supplierId, pageable, createdTo)
+                    else
+                        appointmentRepository.getPaymentsAndGroupBySupplierId(supplierId, pageable)
+
+                val clientIds = entities.map { it.getClient() }
+
+                val clients = clientRepository.findAllById(clientIds).associateBy { it.id }
+
+                val totalPayments = if (page == 0) {
+                    if (createdFrom != null && createdTo != null)
+                        appointmentRepository.getTotalPaymentsInPeriod(supplierId, createdFrom, createdTo) ?: 0
+                    else if (createdFrom != null)
+                        appointmentRepository.getTotalPaymentsFromCreated(supplierId, createdFrom) ?: 0
+                    else if (createdTo != null)
+                        appointmentRepository.getTotalPaymentsToCreated(supplierId, createdTo) ?: 0
+                    else
+                        appointmentRepository.getTotalPayments(supplierId) ?: 0
+                } else 0
+
+                val paymentsMap = mutableMapOf<String, PaymentBySupplier>()
+
+                for(payment in entities) {
+                    paymentsMap[payment.getClient()] = PaymentBySupplier(
+                        clients[payment.getClient()]?.client() ?: return@withContext Data.Error(ClientNotFoundFailure()),
+                        payment.getPayment() ?: return@withContext Data.Error(PaymentNotFoundFailure()),
+                        payment.getSessionCount()  ?: return@withContext Data.Error(SessionNotFoundFailure()),
+                    )
+                }
+
+                val payments = PaymentBySupplierList(
+                    total = totalPayments,
+                    payments = entities.map {
+                        paymentsMap[it.getClient()]
+                    }
+                )
+
+
+                Data.Success(payments)
             }
         } catch (e: Exception) {
             println(e.message)
@@ -177,50 +178,47 @@ class PaymentServiceImpl(
         size: Int,
         createdFrom: LocalDateTime?,
         createdTo: LocalDateTime?
-    ): Data<Unit> {//PaymentLis
+    ): Data<PaymentList> {
         return try {
             withContext(dispatcher) {
-//                val user = userRepository.findByIdOrNull(id) ?:
-//                    return@withContext Data.Error(UserNotFoundFailure())
-//
-//                val supplierId = user.supplier?.id ?:
-//                    return@withContext Data.Error(SupplierNotFoundFailure())
-//
-//                val sortParams =
-//                    TourSortField.RESERVATION_DATE.getSortFields(SortDirection.DESC, PlatformRole.SUPPLIER )
-//
-//                val pageable = PageRequest.of(page, size, sortParams)
-//
-//                var specifications =
-//                    Specification.where(TourSpecification.supplierJoinFilter(supplierId))
-//                        .and(TourSpecification.clientJoinFilter(clientId))
-//                        .and(TourSpecification.paymentIsNotNull())
-//
-//                if (createdFrom != null || createdTo != null) {
-//                    specifications = specifications.and(TourSpecification.isInPeriod(createdFrom, createdTo))
-//                }
-//
-//                val appointmentsEntity = tourRepository.findAll(specifications, pageable)
-//
-//                val payments = appointmentsEntity.map { it.payment() }
-//
-//                val totalPayments = if (page == 0) {
-//                    if (createdFrom != null && createdTo != null)
-//                        tourRepository.getTotalPaymentsByClientInPeriod(supplierId, clientId, createdFrom, createdTo) ?: 0
-//                    else if (createdFrom != null)
-//                        tourRepository.getTotalPaymentsByClientFromCreated(supplierId, clientId, createdFrom) ?: 0
-//                    else if (createdTo != null)
-//                        tourRepository.getTotalPaymentsByClientToCreated(supplierId, clientId, createdTo) ?: 0
-//                    else
-//                        tourRepository.getTotalPaymentsByClient(supplierId, clientId) ?: 0
-//                } else 0
-//
-//                val paymentList = PaymentList(
-//                    total = totalPayments,
-//                    payments = payments
-//                )
+                val supplierId = supplierRepository.findByIdOrNull(id)?.id ?:
+                return@withContext Data.Error(SupplierNotFoundFailure())
 
-                Data.Success(Unit)//paymentList
+                val sortParams =
+                    AppointmentSortField.RESERVATION_DATE.getSortFields(SortDirection.DESC, PlatformRole.SUPPLIER )
+
+                val pageable = PageRequest.of(page, size, sortParams)
+
+                var specifications =
+                    Specification.where(AppointmentSpecification.supplierJoinFilter(supplierId))
+                        .and(AppointmentSpecification.clientJoinFilter(clientId))
+                        .and(AppointmentSpecification.paymentIsNotNull())
+
+                if (createdFrom != null || createdTo != null) {
+                    specifications = specifications.and(AppointmentSpecification.isInPeriod(createdFrom, createdTo))
+                }
+
+                val appointmentsEntity = appointmentRepository.findAll(specifications, pageable)
+
+                val payments = appointmentsEntity.map { it.payment() }
+
+                val totalPayments = if (page == 0) {
+                    if (createdFrom != null && createdTo != null)
+                        appointmentRepository.getTotalPaymentsByClientInPeriod(supplierId, clientId, createdFrom, createdTo) ?: 0
+                    else if (createdFrom != null)
+                        appointmentRepository.getTotalPaymentsByClientFromCreated(supplierId, clientId, createdFrom) ?: 0
+                    else if (createdTo != null)
+                        appointmentRepository.getTotalPaymentsByClientToCreated(supplierId, clientId, createdTo) ?: 0
+                    else
+                        appointmentRepository.getTotalPaymentsByClient(supplierId, clientId) ?: 0
+                } else 0
+
+                val paymentList = PaymentList(
+                    total = totalPayments,
+                    payments = payments
+                )
+
+                Data.Success(paymentList)
             }
         } catch (e: Exception) {
             Data.Error((PaymentListNotFoundFailure()))

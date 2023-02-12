@@ -4,6 +4,7 @@ import dev.december.jeterbackend.supplier.features.suppliers.presentation.dto.Cr
 import dev.december.jeterbackend.supplier.features.suppliers.presentation.dto.UpdateSupplierCalendar
 import dev.december.jeterbackend.supplier.features.suppliers.presentation.dto.UpdateSupplierDescriptionDto
 import dev.december.jeterbackend.shared.core.domain.model.AccountActivityStatus
+import dev.december.jeterbackend.shared.core.domain.model.Language
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.core.utils.convert
 import dev.december.jeterbackend.shared.features.suppliers.domain.models.*
@@ -53,7 +54,49 @@ class SupplierController(
     private val updateRegistrationTokenUseCase: UpdateRegistrationTokenUseCase,
     private val restoreSupplierUseCase: RestoreSupplierUseCase,
     private val updateExperienceUseCase: UpdateSupplierExperienceUseCase,
+    private val updateEmailUseCase: UpdateEmailUseCase,
+    private val verifyEmailUseCase: VerifyEmailUseCase,
+    private val updateLanguageUseCase: UpdateLanguageUseCase,
 ) {
+
+
+    @SecurityRequirement(name = "security_auth")
+    @PostMapping("/verify-email")
+    fun verifyEmail(
+        @Parameter(hidden = true) authentication: Authentication
+    ): Mono<ResponseEntity<Any>> {
+        val user = authentication.principal as SessionUser
+        val userId = user.id
+        return mono { verifyEmailUseCase(VerifyEmailParams(userId)) }.map {
+            when (it) {
+                is Data.Success -> {
+                    ResponseEntity.ok().build()
+                }
+                is Data.Error -> {
+                    ResponseEntity.status(it.failure.code).body(it.failure.message)
+                }
+            }
+        }
+    }
+
+    @SecurityRequirement(name = "security_auth")
+    @PutMapping("/email")
+    fun putEmail(
+        @RequestParam email: String,
+        @Parameter(hidden = true) authentication: Authentication
+    ): Mono<ResponseEntity<Any>> {
+        val user = authentication.principal as SessionUser
+        return mono { updateEmailUseCase(UpdateEmailParams(user.id, email)) }.map {
+            when (it) {
+                is Data.Success -> {
+                    ResponseEntity.ok().build()
+                }
+                is Data.Error -> {
+                    ResponseEntity.status(it.failure.code).body(it.failure.message)
+                }
+            }
+        }
+    }
 
     @PostMapping(value = ["/restore"])
     fun restore(
@@ -635,6 +678,33 @@ class SupplierController(
                 }
                 is Data.Error -> {
                     ResponseEntity.status(it.failure.code).body(it.failure.message)
+                }
+            }
+        }
+    }
+
+    @SecurityRequirement(name = "security_auth")
+    @PutMapping("/language")
+    fun updateLanguage(
+        @Parameter(hidden = true) request: ServerHttpRequest,
+        authentication: Authentication,
+        @RequestParam language: Language
+    ): Mono<ResponseEntity<Any>> {
+
+        val user = authentication.principal as SessionUser
+        val userId = user.id
+
+        return mono { updateLanguageUseCase(
+            UpdateLanguageUseCaseParams(
+                userId, language
+            )
+        ) }.map {
+            when (it) {
+                is Data.Success -> {
+                    ResponseEntity.ok().build()
+                }
+                is Data.Error -> {
+                    ResponseEntity.status(it.failure.code).body(it.failure)
                 }
             }
         }

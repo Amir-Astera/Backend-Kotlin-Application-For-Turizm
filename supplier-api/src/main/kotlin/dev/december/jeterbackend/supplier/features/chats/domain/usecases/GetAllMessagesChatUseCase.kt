@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component
 @Component
 class GetAllMessagesUseCase(
     private val chatService: ChatService
-): UseCase<GetAllMessagesChatParams, Unit> {//Page<Message>
-    override suspend fun invoke(params: GetAllMessagesChatParams): Data<Unit> {//Page<Message>
+): UseCase<GetAllMessagesChatParams, Page<Message>> {
+    override suspend fun invoke(params: GetAllMessagesChatParams): Data<Page<Message>> {
         return chatService.getAllMessages(params.id, params.page, params.size, params.searchField)
     }
 }

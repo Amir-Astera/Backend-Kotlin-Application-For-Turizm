@@ -1,0 +1,45 @@
+notifications:
+  createAppointmentNotification:
+    type: 'APPOINTMENT_CREATED'
+    en:
+      title: '{name} has requested an appointment with you!'
+      body: 'The appointment is requested to be at {date}. You can confirm the appointment in the app!'
+    kk:
+      title: '{name} сізбен кездесуді сұрады!'
+      body: 'Кездесу {date} жоспарланған. Кездесуді қолданбада растай аласыз!'
+    ru:
+      title: '{name} запросил встречу с вами!'
+      body: 'Встреча назначена на {date}. Вы можете подтвердить встречу в приложении!'
+  confirmAppointmentNotification:
+    type: 'APPOINTMENT_CONFIRMED'
+    en:
+      title: '{name} confirmed appointment!'
+      body: 'Your appointment is going to be at {date}.'
+    ru:
+      title: '{name} подтвердил встречу с вами!'
+      body: 'Ваша встреча состоится в {date}.'
+    kk:
+      title: '{name} сізбен кездесуді растады!'
+      body: 'Сіздің кездесуіңіз {date} болады.'
+  changeAppointmentTimeNotification:
+    type: 'APPOINTMENT_CHANGED_TIME'
+    en:
+      title: '{name} changed time!'
+      body: 'The appointment with {name} is requested to be at {date}. You can confirm the appointment in the app!'
+    ru:
+      title: '{name} изменил время!'
+      body: 'Встреча с {name} назначена на {date}. Вы можете подтвердить встречу в приложении!'
+    kk:
+      title: '{name} уақытты өзгертті!'
+      body: '{name} - мен кездесу {date} - ке жоспарланған. Кездесуді қолданбада растай аласыз!'
+  cancelAppointmentNotification:
+    type: 'APPOINTMENT_CANCELED'
+    en:
+      title: 'Appointment canceled!'
+      body: 'The appointment with {name} at {date} canceled!'
+    ru:
+      title: 'Встреча отменена!'
+      body: 'Встреча с {name} в {date} отменена!'
+    kk:
+      title: 'Кездесу тоқтатылды!'
+      body: '{name} - мен {date} кездесуі тоқтатылды!'

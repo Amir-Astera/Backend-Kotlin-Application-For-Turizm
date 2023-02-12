@@ -135,31 +135,6 @@ interface AppointmentRepository: PagingAndSortingRepository<AppointmentEntity, S
         to: LocalDateTime
     ): List<AppointmentEntity>
 
-
-    fun findAllByClientIdAndPaymentNotNull(
-        clientId: String,
-        pageable: Pageable
-    ): List<AppointmentEntity>
-
-    fun findAllByClientIdAndPaymentNotNullAndReservationDateAfter(
-        clientId: String,
-        createdFrom: LocalDateTime,
-        pageable: Pageable
-    ): List<AppointmentEntity>
-
-    fun findAllByClientIdAndPaymentNotNullAndReservationDateBefore(
-        clientId: String,
-        createdTo: LocalDateTime,
-        pageable: Pageable
-    ): List<AppointmentEntity>
-
-    fun findAllByClientIdAndPaymentNotNullAndReservationDateBetween(
-        clientId: String,
-        createdFrom: LocalDateTime,
-        createdTo: LocalDateTime,
-        pageable: Pageable
-    ): List<AppointmentEntity>
-
     fun findAllBySupplierIdAndAppointmentStatusAndReservationDateBetween(
         id: String, status: AppointmentStatus, from: LocalDateTime, to: LocalDateTime
     ): List<AppointmentEntity>
@@ -167,5 +142,16 @@ interface AppointmentRepository: PagingAndSortingRepository<AppointmentEntity, S
     fun findAllByClientIdAndSupplierId(
         clientId: String,
         supplierId: String,
+    ): List<AppointmentEntity>
+
+    fun findByClientIdAndSupplierIdAndAppointmentStatus(
+        clientId: String,
+        supplierId: String,
+        status: AppointmentStatus
+    ): AppointmentEntity?
+
+    fun findAllByReservationDateBeforeAndAppointmentStatusIn(
+        reservationDateTo: LocalDateTime,
+        appointmentStatus: Set<AppointmentStatus>,
     ): List<AppointmentEntity>
 }

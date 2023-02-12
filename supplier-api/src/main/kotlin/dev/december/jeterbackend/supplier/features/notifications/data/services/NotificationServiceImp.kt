@@ -1,17 +1,20 @@
 package dev.december.jeterbackend.supplier.features.notifications.data.services
 
 import com.google.firebase.messaging.FirebaseMessaging
-import dev.december.jeterbackend.shared.features.notifications.data.entities.NotificationStatus
-import dev.december.jeterbackend.shared.features.notifications.data.repositories.NotificationRepository
-import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
-import dev.december.jeterbackend.supplier.features.notifications.domain.services.NotificationService
-import dev.december.jeterbackend.shared.core.domain.model.PlatformRole
+import com.google.firebase.messaging.Message
+import com.google.firebase.messaging.Notification
 import dev.december.jeterbackend.shared.core.results.Data
 import dev.december.jeterbackend.shared.features.clients.data.entities.ClientEntity
-import dev.december.jeterbackend.supplier.core.config.properties.TaskProperties
-import dev.december.jeterbackend.supplier.features.tour.domain.errors.TourUpdateFailure
+import dev.december.jeterbackend.shared.features.notifications.data.entities.NotificationEntity
+import dev.december.jeterbackend.shared.features.notifications.data.repositories.NotificationRepository
+import dev.december.jeterbackend.shared.features.notifications.domain.models.NotificationProperty
+import dev.december.jeterbackend.shared.features.suppliers.data.entiies.SupplierEntity
+import dev.december.jeterbackend.supplier.core.config.properties.NotificationsProperties
+import dev.december.jeterbackend.supplier.features.appointments.domain.errors.AppointmentUpdateFailure
+import dev.december.jeterbackend.supplier.features.notifications.domain.services.NotificationService
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.slf4j.Logger
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -20,116 +23,39 @@ class NotificationServiceImp(
     private val dispatcher: CoroutineDispatcher,
     private val notificationRepository: NotificationRepository,
     private val firebaseMessaging: FirebaseMessaging,
-    private val taskProperties: TaskProperties,
-    ): NotificationService {
-    override suspend fun sendSoonAppointmentNotifications() : Data<Unit> {
-        return try {
+    private val notificationsProperties: NotificationsProperties,
+    private val logger: Logger,
+): NotificationService {
 
-            withContext(dispatcher) {
-
-//                val notifications = notificationRepository
-//                    .findByStatusAndRecipientTypeAndAppointmentDatetimeBetween(
-//                        NotificationStatus.NOT_SENT,
-//                        PlatformRole.SUPPLIER,
-//                        LocalDateTime.now(),
-//                        LocalDateTime.now() + taskProperties.notificationTask.timeBeforeAppointment
-//                    )
-//                val updatedNotifications = notifications.map { notification ->
-//                    if(notification.user.supplier != null) {
-//                        if(notification.user.supplier?.notify == true) {
-//                            val notificationType = NotificationType.APPOINTMENT_SOON
-//                            val notificationTitle = notificationType.title
-//                            val notificationBody = String.format(
-//                                notificationType.body,
-//                                notification.sendersName
-//                            )
-//                            firebaseMessaging.send(
-//                                Message.builder()
-//                                    .putData("type", notificationType.data)
-//                                    .setNotification(
-//                                        Notification.builder()
-//                                            .setTitle(notificationTitle)
-//                                            .setBody(notificationBody)
-//                                            .build()
-//                                    )
-//                                    .setToken(notification.user.supplier?.registrationToken)
-//                                    .build()
-//                            )
-//                        }
-//                    }
-//                    notification.copy(
-//                        status = NotificationStatus.HAVE_BEEN_SENT_BEFORE_TEM_MINUTES
-//                    )
-//                }
-//                if (updatedNotifications.isEmpty()) {
-//                    notificationRepository.saveAll(updatedNotifications)
-//                }
-                Data.Success(Unit)
-            }
-        } catch (e: Exception) {
-            Data.Error(TourUpdateFailure())
-        }
-    }
-
-    override suspend fun cancelNotification(
+    override suspend fun cancel(
         client: ClientEntity,
         supplier: SupplierEntity,
         reservationDate: LocalDateTime,
     ): Data<Unit> {
         return try {
-
             withContext(dispatcher) {
-//                notificationRepository.deleteByUserAndAppointmentDatetimeAndRecipientType(
-//                    client.user ?: return@withContext Data.Error(UserNotFoundFailure()),
-//                    reservationDate,
-//                    PlatformRole.CLIENT
-//                )
-//
-//                notificationRepository.deleteByUserAndAppointmentDatetimeAndRecipientType(
-//                    supplier.user ?: return@withContext Data.Error(UserNotFoundFailure()),
-//                    reservationDate,
-//                    PlatformRole.SUPPLIER
-//                )
-//
-//                if(client.notify) {
-//                    val notificationType = NotificationType.APPOINTMENT_CANCELED
-//                    val notificationTitle = notificationType.title
-//                    val notificationBody = String.format(
-//                        notificationType.body,
-//                        supplier.surName + " " + supplier.name + " " + supplier.patronymic,
-//                        reservationDate.format(
-//                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-//                        )
-//                    )
-//                    firebaseMessaging.send(
-//                        Message.builder()
-//                            .putData("type", notificationType.data)
-//                            .setNotification(
-//                                Notification.builder()
-//                                    .setTitle(notificationTitle)
-//                                    .setBody(notificationBody)
-//                                    .build()
-//                            )
-//                            .setToken(client.registrationToken)
-//                            .build()
-//                    )
-//                }
+
+                notificationRepository.deleteBySupplierAndClientAndAppointmentDatetime(
+                    supplier,
+                    client,
+                    reservationDate,
+                )
+
+                sendMessage(
+                    notificationProperty = notificationsProperties.cancelAppointmentNotification,
+                    supplier = supplier,
+                    client = client,
+                    reservationDate = reservationDate
+                )
 
                 Data.Success(Unit)
             }
         } catch (e: Exception) {
-            Data.Error(TourUpdateFailure())
+            Data.Error(AppointmentUpdateFailure())
         }
     }
 
-    override suspend fun clearNotifications() {
-        notificationRepository.deleteAllByStatusAndRecipientType(
-            NotificationStatus.HAVE_BEEN_SENT_BEFORE_TEM_MINUTES,
-            PlatformRole.SUPPLIER
-        )
-    }
-
-    override suspend fun confirmNotification(
+    override suspend fun confirm(
         supplier: SupplierEntity,
         client: ClientEntity,
         reservationDate: LocalDateTime
@@ -137,88 +63,120 @@ class NotificationServiceImp(
         return try {
 
             withContext(dispatcher) {
-//                val notificationForClient = NotificationEntity(
-//                    sendersName = supplier.surName + " " + supplier.name + " " + supplier.patronymic,
-//                    user = client.user ?: return@withContext Data.Error(UserNotFoundFailure()),
-//                    appointmentDatetime = reservationDate,
-//                    recipientType = PlatformRole.CLIENT
-//                )
-//
-//                val notificationForSupplier = NotificationEntity(
-//                    sendersName = client.fullName ?: "",
-//                    user = supplier.user ?: return@withContext Data.Error(UserNotFoundFailure()),
-//                    appointmentDatetime = reservationDate,
-//                    recipientType = PlatformRole.SUPPLIER
-//                )
-//
-//                notificationRepository.saveAll(listOf(notificationForClient, notificationForSupplier))
-//
-//                if(supplier.notify) {
-//                    val notificationType = NotificationType.APPOINTMENT_CONFIRMED
-//                    val notificationTitle = String.format(notificationType.title, client.fullName)
-//                    val notificationBody = String.format(
-//                        notificationType.body,
-//                        reservationDate.format(
-//                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-//                        )
-//                    )
-//                    firebaseMessaging.send(
-//                        Message.builder()
-//                            .putData("type", notificationType.data)
-//                            .setNotification(
-//                                Notification.builder()
-//                                    .setTitle(notificationTitle)
-//                                    .setBody(notificationBody)
-//                                    .build()
-//                            )
-//                            .setToken(client.registrationToken)
-//                            .build()
-//                    )
-//                }
+
+                val notification = NotificationEntity(
+                    supplier = supplier,
+                    client = client,
+                    appointmentDatetime = reservationDate
+                )
+
+                notificationRepository.save(notification)
+
+                logger.info("SENDING NOTIFICATION")
+
+                sendMessage(
+                    notificationProperty = notificationsProperties.confirmAppointmentNotification,
+                    supplier = supplier,
+                    client = client,
+                    reservationDate = reservationDate,
+                )
+
                 Data.Success(Unit)
             }
         } catch (e: Exception) {
-            Data.Error(TourUpdateFailure())
+            Data.Error(AppointmentUpdateFailure())
         }
     }
 
-    override suspend fun changeTimeNotification(
+    override suspend fun changeTime(
         client: ClientEntity,
         supplier: SupplierEntity,
         reservationDate: LocalDateTime,
+        oldReservationDate: LocalDateTime,
     ): Data<Unit> {
         return try {
             withContext(dispatcher) {
-//                if (client.notify) {
-//                    val notificationType = NotificationType.APPOINTMENT_CHANGED_TIME
-//                    val notificationTitle = String.format(
-//                        notificationType.title,
-//                        supplier.surName + " " + supplier.name + " " + supplier.patronymic
-//                    )
-//                    val notificationBody = String.format(
-//                        notificationType.body,
-//                        supplier.surName + " " + supplier.name + " " + supplier.patronymic,
-//                        reservationDate.format(
-//                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-//                        )
-//                    )
-//                    firebaseMessaging.send(
-//                        Message.builder()
-//                            .putData("type", notificationType.data)
-//                            .setNotification(
-//                                Notification.builder()
-//                                    .setTitle(notificationTitle)
-//                                    .setBody(notificationBody)
-//                                    .build()
-//                            )
-//                            .setToken(client.registrationToken)
-//                            .build()
-//                    )
-//                }
+
+                val notification = notificationRepository.findBySupplierAndClientAndAppointmentDatetime(
+                    supplier,
+                    client,
+                    oldReservationDate
+                )
+                if (notification != null) {
+                    notificationRepository.save(
+                        notification.copy(
+                            appointmentDatetime = reservationDate
+                        )
+                    )
+                }
+
+                sendMessage(
+                    notificationProperty = notificationsProperties.changeAppointmentTimeNotification,
+                    supplier = supplier,
+                    client = client,
+                    reservationDate = reservationDate
+                )
+
                 Data.Success(Unit)
             }
         } catch (e: Exception) {
-            Data.Error(TourUpdateFailure())
+            Data.Error(AppointmentUpdateFailure())
         }
     }
+
+    private suspend fun sendMessage(
+        notificationProperty: NotificationProperty,
+        supplier: SupplierEntity,
+        client: ClientEntity,
+        reservationDate: LocalDateTime
+    ) {
+        if(client.isNotifiable()) {
+            val supplierFullName = supplier.getFullName()
+
+            val notificationType = notificationProperty.type
+            val notificationContent = notificationProperty.getContentByLanguage(client.language)
+
+            val notificationTitle = notificationContent.formatTitle(
+                name = supplierFullName,
+                date = reservationDate,
+            )
+            val notificationBody = notificationContent.formatBody(
+                name = supplierFullName,
+                date = reservationDate
+            )
+
+            sendMessage(
+                client.registrationToken!!,
+                notificationType,
+                notificationTitle,
+                notificationBody
+            )
+        }
+    }
+
+
+    private suspend fun sendMessage(
+        registrationToken: String,
+        type: String,
+        title: String,
+        body: String,
+    ) {
+        try {
+            firebaseMessaging.send(
+                Message.builder()
+                    .putData("type", type)
+                    .setNotification(
+                        Notification.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build()
+                    )
+                    .setToken(registrationToken)
+                    .build()
+            )
+        } catch (e: Exception) {
+            logger.error(e.message)
+        }
+    }
+
 }
